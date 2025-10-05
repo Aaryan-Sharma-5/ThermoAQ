@@ -1,8 +1,8 @@
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import LoginForm from './components/auth/LoginForm';
-import SignupForm from './components/auth/SignupForm';
-import { AuthProvider } from './context/AuthContext';
-import HomePage from './pages/HomePage';
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import LoginForm from "./components/auth/LoginForm";
+import SignupForm from "./components/auth/SignupForm";
+import { AuthProvider } from "./context/AuthContext";
+import HomePage from "./pages/HomePage";
 
 function App() {
   return (
