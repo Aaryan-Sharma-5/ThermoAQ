@@ -2,14 +2,17 @@ import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import signinImage from '../../assets/images/Signin_Signup.png';
+import { useAuth } from '../../context/AuthContext';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  
+  const { login, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -18,25 +21,20 @@ const LoginForm = () => {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setError('');
     
     try {
-      // TODO: Add actual login API call here
-      console.log('Login attempt:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Navigate to dashboard or home after successful login
+      await login(formData);
+      // Navigate to home page after successful login
       navigate('/');
     } catch (error) {
-      console.error('Login error:', error);
-    } finally {
-      setIsLoading(false);
+      setError(error.message);
     }
   };
 
@@ -49,6 +47,13 @@ const LoginForm = () => {
           
           {/* Form Container */}
           <div className="bg-gray-600 rounded-2xl p-6 space-y-4">
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Input */}
               <div className="relative">
@@ -102,10 +107,10 @@ const LoginForm = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={loading}
                 className="w-full py-3 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-colors text-sm"
               >
-                {isLoading ? (
+                {loading ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto"></div>
                 ) : (
                   'Sign In'
@@ -127,10 +132,10 @@ const LoginForm = () => {
           <h1 className="text-4xl font-bold mb-6">Welcome Back!</h1>
           
           <p className="text-lg mb-8 leading-relaxed">
-            Medislot provides an easy-to-use online platform for seamless medical 
-            appointment scheduling. We offer patients the ability to quickly book, 
-            reschedule, or cancel appointments, while enabling doctors to manage 
-            their availability and view appointments in real time.
+            ThermoAQ is India's comprehensive environmental monitoring platform 
+            that combines IMD heat-wave alerts with real-time air quality data 
+            to deliver instant, life-saving risk warnings across India with 
+            district-level precision mapping.
           </p>
           
           <p className="text-lg mb-6">Don't have an account? Sign Up!</p>

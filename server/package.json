@@ -8,25 +8,33 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["heat-wave", "aqi", "environment", "real-time", "alerts"],
+  "keywords": [
+    "heat-wave",
+    "aqi",
+    "environment",
+    "real-time",
+    "alerts"
+  ],
   "author": "",
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
-    "express": "^5.1.0",
-    "mongoose": "^8.19.0",
-    "socket.io": "^4.8.1",
     "axios": "^1.12.2",
-    "dotenv": "^17.2.3",
-    "node-cron": "^4.2.1",
-    "cors": "^2.8.5",
-    "helmet": "^8.0.0",
-    "compression": "^1.7.5",
-    "express-rate-limit": "^7.4.1",
-    "xml2js": "^0.6.2",
+    "bcrypt": "^6.0.0",
     "cheerio": "^1.0.0",
+    "compression": "^1.7.5",
+    "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
-    "moment": "^2.30.1"
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "moment": "^2.30.1",
+    "mongoose": "^8.19.0",
+    "node-cron": "^4.2.1",
+    "socket.io": "^4.8.1",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
