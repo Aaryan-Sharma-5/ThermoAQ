@@ -43,7 +43,7 @@ const LoginForm = () => {
   return (
     <div className="h-screen bg-white flex overflow-hidden">
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-6">
+      <div className="w-1/2 flex items-center justify-center px-4 py-6">
         <div className="w-full max-w-sm">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Sign in to your account</h2>
           
@@ -118,12 +118,12 @@ const LoginForm = () => {
 
       {/* Right Side - Background Image with Content */}
       <div 
-        className="flex-1 bg-cover bg-center bg-no-repeat flex items-center justify-center p-8"
+        className="w-1/2 bg-cover bg-center bg-no-repeat flex items-center justify-center p-8"
         style={{
           backgroundImage: `url(${signinImage})`
         }}
       >
-        <div className="text-center text-white max-w-md">
+        <div className="text-center text-black max-w-md">
           <h1 className="text-4xl font-bold mb-6">Welcome Back!</h1>
           
           <p className="text-lg mb-8 leading-relaxed">
