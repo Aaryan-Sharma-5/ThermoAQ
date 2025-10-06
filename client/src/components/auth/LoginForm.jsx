@@ -1,6 +1,6 @@
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import signinImage from '../../assets/images/Signin_Signup.png';
 import { useAuth } from '../../context/AuthContext';
 
@@ -14,6 +14,10 @@ const LoginForm = () => {
   
   const { login, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the page user was trying to access before being redirected to login
+  const from = location.state?.from?.pathname || '/';
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,8 +35,8 @@ const LoginForm = () => {
     
     try {
       await login(formData);
-      // Navigate to home page after successful login
-      navigate('/');
+      // Navigate to the page user was trying to access, or home page
+      navigate(from, { replace: true });
     } catch (error) {
       setError(error.message);
     }

@@ -165,6 +165,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Clear localStorage and update state
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       dispatch({ type: AUTH_TYPES.LOGOUT });
     }
   };

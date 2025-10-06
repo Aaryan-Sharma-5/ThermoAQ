@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from "react";
 import {
-  MapPin,
   ChevronDown,
   LogIn,
-  UserPlus,
   LogOut,
+  MapPin,
   User,
+  UserPlus,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import Avatar from "../components/ui/Avatar";
+import { useAuth } from "../context/AuthContext";
 
 const indianCities = [
   "Mumbai, Maharashtra",
@@ -72,7 +72,7 @@ export const Header = () => {
 
   return (
     <>
-      <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b bg-black/20 backdrop-blur-sm border-white/10">
+      <div className="relative z-50 flex items-center justify-between px-6 py-4 border-b bg-black/20 backdrop-blur-sm border-white/10">
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-2">
             <div className="flex items-center justify-center w-12 h-12">
@@ -118,7 +118,7 @@ export const Header = () => {
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute z-20 w-64 mt-2 border rounded-lg shadow-xl top-full bg-slate-800/95 backdrop-blur-sm border-white/20">
+              <div className="absolute z-[60] w-64 mt-2 border rounded-lg shadow-xl top-full bg-slate-800/95 backdrop-blur-sm border-white/20">
                 <div className="overflow-y-auto max-h-60">
                   {indianCities.map((city) => (
                     <button
@@ -156,7 +156,7 @@ export const Header = () => {
               </button>
 
               {isUserDropdownOpen && (
-                <div className="absolute right-0 z-20 w-48 mt-2 border rounded-lg shadow-xl top-full bg-slate-800/95 backdrop-blur-sm border-white/20">
+                <div className="absolute right-0 z-[60] w-48 mt-2 border rounded-lg shadow-xl top-full bg-slate-800/95 backdrop-blur-sm border-white/20">
                   <div className="py-2">
                     <button
                       onClick={() => {

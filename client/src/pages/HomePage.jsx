@@ -1,12 +1,12 @@
 import landingPageImage from "../assets/images/landingPage.png";
-import { Header } from "../layout/Header";
 import { Footer } from "../layout/Footer";
+import { Header } from "../layout/Header";
 
 const HomePage = () => {
   return (
     <>
       <div>
-        <section className="relative h-screen overflow-hidden">
+        <section className="relative h-screen">
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
