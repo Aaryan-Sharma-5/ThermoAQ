@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { MapPin, ChevronDown, LogIn, UserPlus, LogOut, User } from "lucide-react";
+import {
+  MapPin,
+  ChevronDown,
+  LogIn,
+  UserPlus,
+  LogOut,
+  User,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Avatar from "../components/ui/Avatar";
@@ -23,59 +30,82 @@ export const Header = () => {
   const [selectedCity, setSelectedCity] = useState("Select City");
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  
+
   const cityDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target)) {
+      if (
+        cityDropdownRef.current &&
+        !cityDropdownRef.current.contains(event.target)
+      ) {
         setIsDropdownOpen(false);
       }
-      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target)
+      ) {
         setIsUserDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   const handleLoginClick = () => {
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleSignUpClick = () => {
-    navigate('/signup');
+    navigate("/signup");
   };
 
   const handleLogout = async () => {
     await logout();
     setIsUserDropdownOpen(false);
-    navigate('/');
+    navigate("/");
   };
 
   return (
     <>
-      <div className="relative z-10 flex items-center justify-between px-6 py-4 bg-black/20 backdrop-blur-sm border-b border-white/10">
-        <div className="flex items-center space-x-2">
-          <div className="w-12 h-12 flex items-center justify-center">
-            <img
-              src="/favicon_io/android-chrome-192x192.png"
-              alt="ThermoAQ Logo"
-              className="w-8 h-8"
-            />
+      <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b bg-black/20 backdrop-blur-sm border-white/10">
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center w-12 h-12">
+              <img
+                src="/favicon_io/android-chrome-192x192.png"
+                alt="ThermoAQ Logo"
+                className="w-8 h-8"
+              />
+            </div>
+            <span className="text-xl font-semibold text-white">ThermoAQ</span>
           </div>
-          <span className="text-white text-xl font-semibold">Home</span>
+
+          <nav className="flex items-center space-x-4">
+            <button
+              onClick={() => navigate("/")}
+              className="font-medium text-white transition-colors hover:text-blue-400"
+            >
+              Home
+            </button>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="font-medium text-white transition-colors hover:text-blue-400"
+            >
+              Dashboard
+            </button>
+          </nav>
         </div>
 
         <div className="flex items-center space-x-4">
           <div className="relative" ref={cityDropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2 text-white hover:bg-white/20 transition-colors"
+              className="flex items-center px-4 py-2 space-x-2 text-white transition-colors border rounded-lg bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
             >
               <MapPin size={18} className="text-blue-400" />
               <span className="text-sm font-medium">{selectedCity}</span>
@@ -88,8 +118,8 @@ export const Header = () => {
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute top-full mt-2 w-64 bg-slate-800/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-xl z-20">
-                <div className="max-h-60 overflow-y-auto">
+              <div className="absolute z-20 w-64 mt-2 border rounded-lg shadow-xl top-full bg-slate-800/95 backdrop-blur-sm border-white/20">
+                <div className="overflow-y-auto max-h-60">
                   {indianCities.map((city) => (
                     <button
                       key={city}
@@ -97,7 +127,7 @@ export const Header = () => {
                         setSelectedCity(city);
                         setIsDropdownOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-white hover:bg-white/10 transition-colors border-b border-white/10 last:border-b-0"
+                      className="w-full px-4 py-2 text-left text-white transition-colors border-b hover:bg-white/10 border-white/10 last:border-b-0"
                     >
                       {city}
                     </button>
@@ -113,10 +143,10 @@ export const Header = () => {
             <div className="relative" ref={userDropdownRef}>
               <button
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                className="flex items-center space-x-3 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-white/20 transition-colors"
+                className="flex items-center px-4 py-2 space-x-3 transition-colors border rounded-lg bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
               >
                 <Avatar name={user.name} size="sm" />
-                <span className="text-white font-medium">{user.name}</span>
+                <span className="font-medium text-white">{user.name}</span>
                 <ChevronDown
                   size={16}
                   className={`text-white transition-transform ${
@@ -126,21 +156,21 @@ export const Header = () => {
               </button>
 
               {isUserDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-48 bg-slate-800/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-xl z-20">
+                <div className="absolute right-0 z-20 w-48 mt-2 border rounded-lg shadow-xl top-full bg-slate-800/95 backdrop-blur-sm border-white/20">
                   <div className="py-2">
                     <button
                       onClick={() => {
                         setIsUserDropdownOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-white hover:bg-white/10 transition-colors flex items-center space-x-2"
+                      className="flex items-center w-full px-4 py-2 space-x-2 text-left text-white transition-colors hover:bg-white/10"
                     >
                       <User size={16} />
                       <span>Profile</span>
                     </button>
-                    <hr className="border-white/20 my-1" />
+                    <hr className="my-1 border-white/20" />
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-red-400 hover:bg-red-500/10 transition-colors flex items-center space-x-2"
+                      className="flex items-center w-full px-4 py-2 space-x-2 text-left text-red-400 transition-colors hover:bg-red-500/10"
                     >
                       <LogOut size={16} />
                       <span>Logout</span>
@@ -151,16 +181,16 @@ export const Header = () => {
             </div>
           ) : (
             <>
-              <button 
+              <button
                 onClick={handleLoginClick}
-                className="flex items-center space-x-2 px-4 py-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                className="flex items-center px-4 py-2 space-x-2 text-white transition-colors rounded-lg hover:bg-white/10"
               >
                 <LogIn size={18} />
                 <span className="font-medium">Login</span>
               </button>
-              <button 
+              <button
                 onClick={handleSignUpClick}
-                className="flex items-center space-x-2 px-4 py-2 bg-white text-slate-900 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+                className="flex items-center px-4 py-2 space-x-2 font-medium transition-colors bg-white rounded-lg text-slate-900 hover:bg-gray-100"
               >
                 <UserPlus size={18} />
                 <span>SignUp</span>

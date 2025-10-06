@@ -3,6 +3,7 @@ import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import { AuthProvider } from "./context/AuthContext";
 import HomePage from "./pages/HomePage";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <div className="flex flex-col min-h-screen">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/signup" element={<SignupForm />} />
           </Routes>
