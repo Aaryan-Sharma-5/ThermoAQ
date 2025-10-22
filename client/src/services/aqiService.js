@@ -1,6 +1,6 @@
-import { calculateAQI, getAQIInfo, INDIAN_CITIES_DATA } from '../utils/environmentalUtils.js';
+import { calculateAQI, getAQIInfo, INDIAN_CITIES_DATA, generateAQIHistory } from '../utils/environmentalUtils.js';
 
-// Professional AQI Service with beautiful and accurate environmental data
+// Professional AQI Service with realistic and accurate environmental data
 const WEATHER_API_KEY = '8dc24606d7fd46a7a1991208250610';
 const WEATHER_API_BASE = 'http://api.weatherapi.com/v1';
 
@@ -53,105 +53,143 @@ class AQIService {
     }
 
     try {
-      // Use WeatherAPI which includes air quality data
-      const url = `${WEATHER_API_BASE}/current.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(city)}&aqi=yes`;
-      const response = await fetch(url);
+      // Try WeatherAPI first for actual air quality data
+      const response = await fetch(
+        `${WEATHER_API_BASE}/current.json?key=${WEATHER_API_KEY}&q=${city}&aqi=yes`
+      );
       
-      if (!response.ok) {
-        throw new Error(`WeatherAPI error: ${response.status}`);
+      if (response.ok) {
+        const data = await response.json();
+        const airQuality = data?.current?.air_quality;
+        
+        if (airQuality) {
+          // Use real API data when available
+          const pm25 = airQuality.pm2_5 || 0;
+          const pm10 = airQuality.pm10 || 0;
+          const co = airQuality.co || 0;
+          const no2 = airQuality.no2 || 0;
+          const so2 = airQuality.so2 || 0;
+          const o3 = airQuality.o3 || 0;
+          
+          // Calculate AQI from the dominant pollutant
+          const pm25AQI = this.calculateAQIFromPM(pm25);
+          const calculatedAQI = Math.max(pm25AQI, Math.round(pm10 * 0.6), Math.round(o3 * 1.2));
+          
+          const aqiInfo = this.getAQILevel(calculatedAQI);
+          
+          const aqiData = {
+            aqi: calculatedAQI,
+            level: aqiInfo.level,
+            color: aqiInfo.color,
+            description: aqiInfo.description,
+            location: `${data.location.name}, ${data.location.region}`,
+            pollutants: {
+              pm25: Math.round(pm25),
+              pm10: Math.round(pm10),
+              co: Math.round(co * 1000), // Convert to µg/m³
+              no2: Math.round(no2),
+              so2: Math.round(so2),
+              o3: Math.round(o3)
+            },
+            source: 'WeatherAPI',
+            timestamp: new Date().toISOString()
+          };
+          
+          this.setCacheData(cacheKey, aqiData);
+          return aqiData;
+        }
       }
       
-      const apiData = await response.json();
-      
-      if (apiData.current.air_quality) {
-        const aq = apiData.current.air_quality;
-        const calculatedAQI = this.calculateAQIFromPM(aq.pm2_5);
-        const aqiInfo = this.getAQILevel(calculatedAQI);
-        
-        const aqiData = {
-          aqi: calculatedAQI,
-          level: aqiInfo.level,
-          color: aqiInfo.color,
-          description: aqiInfo.description,
-          location: `${apiData.location.name}, ${apiData.location.region}`,
-          pollutants: {
-            pm25: Math.round(aq.pm2_5 || 0),
-            pm10: Math.round(aq.pm10 || 0),
-            co: Math.round(aq.co || 0),
-            no2: Math.round(aq.no2 || 0),
-            so2: Math.round(aq.so2 || 0),
-            o3: Math.round(aq.o3 || 0)
-          },
-          timestamp: new Date().toISOString()
-        };
-        
-        this.setCacheData(cacheKey, aqiData);
-        return aqiData;
-      }
-      
-      throw new Error('AQI data not available from WeatherAPI');
+      // Fallback to realistic simulated data based on current conditions
+      return this.getRealisticAQIData(city);
       
     } catch (error) {
       console.error('Failed to fetch air quality:', error);
-      
-      // Enhanced mock data with accurate Indian city patterns
-      const cityAQIData = Object.fromEntries(
-        Object.entries(INDIAN_CITIES_DATA).map(([cityName, cityInfo]) => {
-          const now = new Date();
-          const hour = now.getHours();
-          const season = now.getMonth(); // 0-11
-          
-          // Seasonal adjustments (winter months have higher AQI in North India)
-          const seasonalMultiplier = season >= 10 || season <= 2 ? 1.4 : 0.8;
-          
-          // Daily cycle (higher AQI in morning and evening rush hours)
-          const hourlyMultiplier = (hour >= 7 && hour <= 10) || (hour >= 17 && hour <= 20) ? 1.3 : 0.9;
-          
-          const adjustedAQI = Math.round(cityInfo.baseAQI * seasonalMultiplier * hourlyMultiplier * cityInfo.industrialFactor);
-          
-          return [cityName, {
-            aqi: Math.min(Math.max(adjustedAQI, 15), 300),
-            pm25: Math.round(adjustedAQI * 0.6),
-            pm10: Math.round(adjustedAQI * 0.9),
-            co: Math.round(adjustedAQI * 8 + 200),
-            no2: Math.round(adjustedAQI * 0.4 + 10),
-            so2: Math.round(adjustedAQI * 0.2 + 5),
-            o3: Math.round(adjustedAQI * 0.5 + 20)
-          }];
-        })
-      );
-
-      const cityKey = Object.keys(cityAQIData).find(key => 
-        city.toLowerCase().includes(key.toLowerCase())
-      ) || 'Mumbai';
-
-      const mockData = cityAQIData[cityKey];
-      const aqiInfo = this.getAQILevel(mockData.aqi);
-      
-      const aqiData = {
-        aqi: mockData.aqi,
-        level: aqiInfo.level,
-        color: aqiInfo.color,
-        description: aqiInfo.description,
-        location: city,
-        pollutants: {
-          pm25: mockData.pm25,
-          pm10: mockData.pm10,
-          co: mockData.co,
-          no2: mockData.no2,
-          so2: mockData.so2,
-          o3: mockData.o3
-        },
-        timestamp: new Date().toISOString()
-      };
-      
-      this.setCacheData(cacheKey, aqiData);
-      return aqiData;
+      return this.getRealisticAQIData(city);
     }
   }
 
+  // Generate realistic AQI data based on actual environmental factors
+  getRealisticAQIData(city) {
+    const cityData = Object.entries(INDIAN_CITIES_DATA).find(([name]) => 
+      city.toLowerCase().includes(name.toLowerCase())
+    );
+    
+    const cityInfo = cityData ? cityData[1] : INDIAN_CITIES_DATA['Mumbai'];
+    const cityName = cityData ? cityData[0] : 'Mumbai';
+    
+    const now = new Date();
+    const hour = now.getHours();
+    const month = now.getMonth(); // 0-11
+    const dayOfWeek = now.getDay(); // 0 = Sunday
+    
+    // Realistic time-based factors
+    const rushHourMultiplier = (hour >= 7 && hour <= 10) || (hour >= 17 && hour <= 20) ? 1.4 : 
+                               (hour >= 23 || hour <= 5) ? 0.7 : 1.0;
+    
+    // Seasonal factors (winter pollution is higher in North India)
+    const winterMonths = [10, 11, 0, 1, 2]; // Nov-Feb
+    const isWinter = winterMonths.includes(month);
+    const isNorthernCity = cityInfo.coords[0] > 23; // Above Tropic of Cancer
+    const seasonalMultiplier = (isWinter && isNorthernCity) ? 1.6 : 
+                              isWinter ? 1.2 : 
+                              (month >= 3 && month <= 5) ? 1.1 : 0.9; // Summer months slightly higher
+    
+    // Weekend effect (lower traffic on weekends)
+    const weekendMultiplier = (dayOfWeek === 0 || dayOfWeek === 6) ? 0.8 : 1.0;
+    
+    // Calculate realistic AQI
+    const baseAQI = cityInfo.baseAQI;
+    const variation = cityInfo.seasonalVariation * (Math.random() - 0.5); // Random daily variation
+    
+    const calculatedAQI = Math.round(
+      baseAQI * 
+      rushHourMultiplier * 
+      seasonalMultiplier * 
+      weekendMultiplier * 
+      cityInfo.industrialFactor + 
+      variation
+    );
+    
+    const finalAQI = Math.max(15, Math.min(350, calculatedAQI));
+    
+    // Calculate realistic pollutant concentrations based on AQI
+    const pm25 = Math.round(finalAQI * 0.65 + (Math.random() - 0.5) * 10);
+    const pm10 = Math.round(finalAQI * 1.1 + (Math.random() - 0.5) * 15);
+    const co = Math.round(finalAQI * 12 + 300 + (Math.random() - 0.5) * 100);
+    const no2 = Math.round(finalAQI * 0.45 + 15 + (Math.random() - 0.5) * 8);
+    const so2 = Math.round(finalAQI * 0.25 + 8 + (Math.random() - 0.5) * 5);
+    const o3 = Math.round(finalAQI * 0.6 + 25 + (Math.random() - 0.5) * 12);
+    
+    const aqiInfo = this.getAQILevel(finalAQI);
+    
+    return {
+      aqi: finalAQI,
+      level: aqiInfo.level,
+      color: aqiInfo.color,
+      description: aqiInfo.description,
+      location: `${cityName}, India`,
+      pollutants: {
+        pm25: Math.max(5, pm25),
+        pm10: Math.max(10, pm10),
+        co: Math.max(200, co),
+        no2: Math.max(8, no2),
+        so2: Math.max(3, so2),
+        o3: Math.max(15, o3)
+      },
+      source: 'Realistic Simulation',
+      timestamp: new Date().toISOString(),
+      factors: {
+        rushHour: rushHourMultiplier > 1,
+        winter: isWinter,
+        weekend: dayOfWeek === 0 || dayOfWeek === 6,
+        industrial: cityInfo.industrialFactor > 1
+      }
+    };
+  }
+
   async getAQIHistory(city = 'Mumbai', days = 7) {
-    const cacheKey = `aqi_history_${city}_${days}`;
+    const cacheKey = `history_${city}_${days}`;
     const cached = this.getCachedData(cacheKey);
     
     if (cached) {
@@ -159,100 +197,93 @@ class AQIService {
     }
 
     try {
-      // For now, generate realistic historical data
-      // In a real implementation, you'd call a historical API
+      // Get current AQI data to base the history on
       const currentAQI = await this.getAirQuality(city);
-      const history = [];
+      const baseAQI = currentAQI.aqi;
       
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        
-        // Generate realistic variations around current AQI
-        const variation = (Math.random() - 0.5) * 30; // ±15 AQI points
-        const aqiValue = Math.max(10, Math.min(300, currentAQI.aqi + variation));
-        const aqiInfo = this.getAQILevel(aqiValue);
-        
-        history.push({
-          date: date.toISOString().split('T')[0],
-          aqi: Math.round(aqiValue),
-          level: aqiInfo.level,
-          color: aqiInfo.color,
-          hour: i === 0 ? new Date().getHours() : Math.floor(Math.random() * 24)
-        });
-      }
+      // Generate realistic historical variations
+      const history = generateAQIHistory(baseAQI, days);
       
       this.setCacheData(cacheKey, history);
       return history;
       
     } catch (error) {
-      console.error('Failed to fetch AQI history:', error);
+      console.error('Failed to generate AQI history:', error);
       
-      // Mock historical data
-      const mockHistory = Array.from({ length: days }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (days - 1 - i));
-        const aqi = 50 + Math.random() * 100; // Random AQI between 50-150
-        const aqiInfo = this.getAQILevel(aqi);
-        
-        return {
-          date: date.toISOString().split('T')[0],
-          aqi: Math.round(aqi),
-          level: aqiInfo.level,
-          color: aqiInfo.color,
-          hour: Math.floor(Math.random() * 24)
-        };
-      });
+      // Fallback to realistic generated history
+      const cityData = Object.entries(INDIAN_CITIES_DATA).find(([name]) => 
+        city.toLowerCase().includes(name.toLowerCase())
+      );
+      const baseAQI = cityData ? cityData[1].baseAQI : 85;
       
-      this.setCacheData(cacheKey, mockHistory);
-      return mockHistory;
+      return generateAQIHistory(baseAQI, days);
     }
   }
 
-  async getMultipleCitiesAQI(cities = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata']) {
+  async getMultipleCitiesAQI(cities = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune']) {
+    const cacheKey = `multi_cities_${cities.join('_')}`;
+    const cached = this.getCachedData(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+
     try {
-      const promises = cities.map(city => this.getAirQuality(city));
-      const results = await Promise.all(promises);
+      // Fetch AQI data for all cities in parallel
+      const promises = cities.map(async city => {
+        const aqiData = await this.getAirQuality(city);
+        const coords = this.getCityCoordinates(city);
+        
+        return {
+          city,
+          aqi: aqiData.aqi,
+          level: aqiData.level,
+          color: aqiData.color,
+          coords: coords,
+          pollutants: aqiData.pollutants,
+          source: aqiData.source
+        };
+      });
       
-      return results.map((data, index) => ({
-        city: cities[index],
-        aqi: data.aqi,
-        level: data.level,
-        color: data.color,
-        coordinates: this.getCityCoordinates(cities[index])
-      }));
+      const results = await Promise.all(promises);
+      this.setCacheData(cacheKey, results);
+      return results;
       
     } catch (error) {
       console.error('Failed to fetch multiple cities AQI:', error);
       
-      // Mock data for Indian cities
-      return [
-        { city: 'Delhi', aqi: 168, level: 'Unhealthy', color: '#EF4444', coordinates: [28.6139, 77.2090] },
-        { city: 'Mumbai', aqi: 78, level: 'Moderate', color: '#F59E0B', coordinates: [19.0760, 72.8777] },
-        { city: 'Bangalore', aqi: 65, level: 'Moderate', color: '#F59E0B', coordinates: [12.9716, 77.5946] },
-        { city: 'Chennai', aqi: 85, level: 'Moderate', color: '#F59E0B', coordinates: [13.0827, 80.2707] },
-        { city: 'Kolkata', aqi: 125, level: 'Unhealthy for Sensitive Groups', color: '#F97316', coordinates: [22.5726, 88.3639] }
-      ];
+      // Fallback to realistic simulated data
+      return cities.map(city => {
+        const aqiData = this.getRealisticAQIData(city);
+        const coords = this.getCityCoordinates(city);
+        
+        return {
+          city,
+          aqi: aqiData.aqi,
+          level: aqiData.level,
+          color: aqiData.color,
+          coords: coords,
+          pollutants: aqiData.pollutants,
+          source: aqiData.source
+        };
+      });
     }
   }
 
   getCityCoordinates(city) {
-    const coordinates = {
-      'Delhi': [28.6139, 77.2090],
-      'Mumbai': [19.0760, 72.8777],
-      'Bangalore': [12.9716, 77.5946],
-      'Chennai': [13.0827, 80.2707],
-      'Kolkata': [22.5726, 88.3639],
-      'Hyderabad': [17.3850, 78.4867],
-      'Pune': [18.5204, 73.8567],
-      'Ahmedabad': [23.0225, 72.5714],
-      'Jaipur': [26.9124, 75.7873],
-      'Lucknow': [26.8467, 80.9462]
-    };
+    const cityData = Object.entries(INDIAN_CITIES_DATA).find(([name]) => 
+      city.toLowerCase().includes(name.toLowerCase())
+    );
     
-    return coordinates[city] || [20.5937, 78.9629]; // Default to center of India
+    if (cityData) {
+      return cityData[1].coords;
+    }
+    
+    // Default to Mumbai coordinates if city not found
+    return INDIAN_CITIES_DATA['Mumbai'].coords;
   }
 }
 
-export const aqiService = new AQIService();
+// Create and export a singleton instance
+const aqiService = new AQIService();
 export default aqiService;

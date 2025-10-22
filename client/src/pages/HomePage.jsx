@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import landingPageImage from "../assets/images/landingPage.png";
-import { AQICircularChart, AQITrendChart, PollutantBars, WeatherForecastChart } from '../components/charts/ChartComponents';
-import { AQIMap } from '../components/maps/MapComponents';
+import { AQICircularChart, AQITrendChart, WeatherForecastChart } from '../components/charts/ChartComponents';
 import { Header } from "../layout/Header";
 import aqiService from '../services/aqiService';
 import weatherService from '../services/weatherService';
@@ -97,7 +96,7 @@ const HomePage = () => {
     fetchAllData(locationString);
   };
 
-  // AQI Map Component with real data
+  // Simple AQI Map Component for debugging
   const AQIMapModal = () => (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-gray-800 rounded-2xl w-full max-w-6xl h-[90vh] relative overflow-hidden">
@@ -112,106 +111,111 @@ const HomePage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
             </button>
-            <h2 className="text-white text-xl font-bold">AQI Map</h2>
+            <h2 className="text-white text-xl font-bold">AQI Details</h2>
           </div>
-          <div className="flex items-center space-x-2">
-            <select 
-              value={selectedLocation}
-              onChange={(e) => {
-                setSelectedLocation(e.target.value);
-                fetchAllData(e.target.value);
-              }}
-              className="bg-gray-700 text-white px-3 py-1 rounded text-sm border border-gray-600"
-            >
-              <option value="Mumbai, Maharashtra">Mumbai, Maharashtra</option>
-              <option value="Delhi, Delhi">Delhi, Delhi</option>
-              <option value="Bangalore, Karnataka">Bangalore, Karnataka</option>
-              <option value="Chennai, Tamil Nadu">Chennai, Tamil Nadu</option>
-              <option value="Kolkata, West Bengal">Kolkata, West Bengal</option>
-              <option value="Hyderabad, Telangana">Hyderabad, Telangana</option>
-              <option value="Pune, Maharashtra">Pune, Maharashtra</option>
-            </select>
-            <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
+          <div className="text-white">
+            {aqiData?.location || selectedLocation}
           </div>
         </div>
 
-        <div className="flex h-full">
-          {/* Left Sidebar with real data */}
-          <div className="w-80 bg-gray-900 p-6 overflow-y-auto">
-            <div className="mb-6">
-              <h3 className="text-white text-lg font-semibold mb-4">Air Quality Map</h3>
-              <p className="text-gray-400 text-sm mb-4">{aqiData?.location || selectedLocation}</p>
-              
-              {/* Real AQI Value Display */}
-              <div className="mb-6">
-                <div 
-                  className="text-5xl font-bold mb-2"
-                  style={{ color: aqiData?.color || '#F59E0B' }}
-                >
-                  {aqiData?.aqi || 64}
-                </div>
-                <div 
-                  className="text-sm mb-4"
-                  style={{ color: aqiData?.color || '#F59E0B' }}
-                >
-                  {aqiData?.level || 'Moderate'}
-                </div>
-                <div className="text-gray-400 text-xs">{aqiData?.description || 'AQI Level'}</div>
-              </div>
+        <div className="p-6">
+          {/* Current AQI Display */}
+          <div className="text-center mb-8">
+            <div 
+              className="text-6xl font-bold mb-4"
+              style={{ color: aqiData?.color || '#F59E0B' }}
+            >
+              {aqiData?.aqi || 64}
+            </div>
+            <div className="text-white text-xl mb-2">
+              {aqiData?.level || 'Moderate'}
+            </div>
+            <div className="text-gray-400">
+              Air Quality Index for {aqiData?.location || selectedLocation}
+            </div>
+          </div>
 
-              {/* Health Icon */}
-              <div className="mb-6 flex justify-center">
-                <div 
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
-                  style={{ backgroundColor: aqiData?.color || '#F59E0B' }}
-                >
-                  {(aqiData?.aqi || 64) > 100 ? '😷' : (aqiData?.aqi || 64) > 50 ? '😐' : '😊'}
-                </div>
-              </div>
-
-              {/* Real Pollutant Breakdown */}
-              {aqiData?.pollutants && (
-                <div className="mb-6">
-                  <h4 className="text-white text-sm font-semibold mb-3">Pollutant Breakdown</h4>
-                  <PollutantBars pollutants={aqiData.pollutants} />
-                </div>
-              )}
-
-              {/* Real 7-day Trend Chart */}
-              {aqiHistory.length > 0 && (
-                <div className="mb-6">
-                  <h4 className="text-white text-sm font-semibold mb-3">7-Day Trend</h4>
-                  <AQITrendChart data={aqiHistory} className="h-32" />
-                  
-                  {/* AQI Scale */}
+          {/* AQI Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-gray-700 rounded-xl p-6">
+              <h3 className="text-white text-lg font-semibold mb-4">Health Information</h3>
+              <div className="text-gray-300">
+                <p className="mb-2">
+                  {aqiData?.description || 'Air quality is acceptable for most people.'}
+                </p>
+                {aqiData?.recommendations && (
                   <div className="mt-4">
-                    <div className="flex justify-between text-xs text-gray-400 mb-1">
-                      <span>0</span>
-                      <span>50</span>
-                      <span>100</span>
-                      <span>150</span>
-                      <span>200</span>
-                      <span>300+</span>
-                    </div>
-                    <div className="h-2 bg-gradient-to-r from-green-400 via-yellow-400 via-orange-400 to-red-500 rounded-full"></div>
+                    <h4 className="text-white font-medium mb-2">Recommendations:</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      {aqiData.recommendations.map((rec, index) => (
+                        <li key={index} className="text-sm">{rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gray-700 rounded-xl p-6">
+              <h3 className="text-white text-lg font-semibold mb-4">Pollutant Levels</h3>
+              {aqiData?.pollutants ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">PM2.5</span>
+                    <span className="text-white font-medium">{aqiData.pollutants.pm25} μg/m³</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">PM10</span>
+                    <span className="text-white font-medium">{aqiData.pollutants.pm10} μg/m³</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">O₃</span>
+                    <span className="text-white font-medium">{aqiData.pollutants.o3} μg/m³</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">NO₂</span>
+                    <span className="text-white font-medium">{aqiData.pollutants.no2} μg/m³</span>
                   </div>
                 </div>
+              ) : (
+                <div className="text-gray-400">Pollutant data not available</div>
               )}
             </div>
           </div>
 
-          {/* Real Map Area with Leaflet */}
-          <div className="flex-1 relative bg-gray-700">
-            <AQIMap 
-              aqiData={multipleCitiesAQI}
-              selectedCity={selectedLocation.split(',')[0]}
-              onCitySelect={handleCitySelectFromMap}
-              className="w-full h-full"
-            />
+          {/* Historical Data */}
+          {aqiHistory.length > 0 && (
+            <div className="mt-6 bg-gray-700 rounded-xl p-6">
+              <h3 className="text-white text-lg font-semibold mb-4">Recent AQI History</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                {aqiHistory.slice(0, 7).map((item, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-gray-400 text-xs mb-1">
+                      {new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                    </div>
+                    <div 
+                      className="text-2xl font-bold mb-1"
+                      style={{ color: item.color || '#F59E0B' }}
+                    >
+                      {item.aqi}
+                    </div>
+                    <div className="text-gray-300 text-xs">
+                      {item.level || 'Moderate'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Close Button */}
+          <div className="text-center mt-8">
+            <button
+              onClick={() => setShowAQIMap(false)}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

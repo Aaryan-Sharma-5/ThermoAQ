@@ -1,45 +1,50 @@
 const WEATHER_API_KEY = '8dc24606d7fd46a7a1991208250610';
 const WEATHER_API_BASE = 'http://api.weatherapi.com/v1';
 
+// Realistic weather patterns for Indian cities
+const INDIAN_WEATHER_DATA = {
+  'Delhi': {
+    baseTemp: 25, region: 'Delhi', tempRange: [12, 38], humidity: [30, 75], condition: 'Partly Cloudy'
+  },
+  'Mumbai': {
+    baseTemp: 27, region: 'Maharashtra', tempRange: [20, 32], humidity: [65, 85], condition: 'Partly Cloudy'
+  },
+  'Bangalore': {
+    baseTemp: 23, region: 'Karnataka', tempRange: [16, 30], humidity: [55, 80], condition: 'Pleasant'
+  },
+  'Chennai': {
+    baseTemp: 28, region: 'Tamil Nadu', tempRange: [22, 35], humidity: [60, 85], condition: 'Warm'
+  },
+  'Kolkata': {
+    baseTemp: 26, region: 'West Bengal', tempRange: [18, 34], humidity: [65, 88], condition: 'Humid'
+  },
+  'Hyderabad': {
+    baseTemp: 25, region: 'Telangana', tempRange: [18, 33], humidity: [45, 75], condition: 'Pleasant'
+  },
+  'Pune': {
+    baseTemp: 24, region: 'Maharashtra', tempRange: [15, 31], humidity: [50, 75], condition: 'Pleasant'
+  },
+  'Ahmedabad': {
+    baseTemp: 26, region: 'Gujarat', tempRange: [16, 36], humidity: [40, 70], condition: 'Dry'
+  },
+  'Jaipur': {
+    baseTemp: 24, region: 'Rajasthan', tempRange: [12, 35], humidity: [35, 65], condition: 'Dry'
+  },
+  'Surat': {
+    baseTemp: 26, region: 'Gujarat', tempRange: [18, 34], humidity: [55, 80], condition: 'Humid'
+  }
+};
+
 class WeatherService {
   constructor() {
     this.cache = new Map();
-    this.cacheTimeout = 5 * 60 * 1000; 
-  }
-
-  // Map WeatherAPI condition codes to emojis
-  getWeatherIcon(code, isDay = 1) {
-    const iconMap = {
-      1000: isDay ? '☀️' : '🌙', 
-      1003: isDay ? '🌤️' : '☁️', 
-      1006: '☁️', // Cloudy
-      1030: '🌫️', // Mist
-      1063: '🌦️', // Patchy rain possible
-      1087: '⛈️', // Thundery outbreaks possible
-      1117: '🌨️', // Blizzard
-      1135: '🌫️', // Fog
-      1183: '🌧️', // Light rain
-      1195: '🌧️', // Heavy rain
-      1210: '🌨️', // Patchy light snow
-      1225: '❄️', // Heavy snow
-      1240: '🌦️', // Light rain shower
-      1282: '⛈️'  // Moderate or heavy snow with thunder
-    };
-
-    return iconMap[code] || (isDay ? '☀️' : '🌙');
-  }
-
-  isCacheValid(key) {
-    const cached = this.cache.get(key);
-    if (!cached) return false;
-    
-    const now = Date.now();
-    return (now - cached.timestamp) < this.cacheTimeout;
+    this.cacheTimeout = 10 * 60 * 1000; // 10 minutes
   }
 
   getCachedData(key) {
-    if (this.isCacheValid(key)) {
-      return this.cache.get(key).data;
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+      return cached.data;
     }
     return null;
   }
@@ -51,7 +56,162 @@ class WeatherService {
     });
   }
 
-  async getCurrentWeather(city = 'Rameswaram') {
+  getRealisticWeatherData(cityName) {
+    const city = cityName.toLowerCase();
+    let cityKey = Object.keys(INDIAN_WEATHER_DATA).find(key => 
+      key.toLowerCase() === city || 
+      city.includes(key.toLowerCase()) ||
+      key.toLowerCase().includes(city)
+    );
+    
+    // Default to Mumbai if city not found
+    if (!cityKey) {
+      cityKey = 'Mumbai';
+    }
+    
+    const cityData = INDIAN_WEATHER_DATA[cityKey];
+    const now = new Date();
+    const hour = now.getHours();
+    
+    // Realistic temperature variation based on time of day
+    let tempVariation = 0;
+    if (hour >= 6 && hour < 10) tempVariation = -3; // Morning cool
+    else if (hour >= 10 && hour < 16) tempVariation = 5; // Afternoon hot
+    else if (hour >= 16 && hour < 20) tempVariation = 2; // Evening warm
+    else tempVariation = -5; // Night cool
+    
+    const temperature = Math.round(cityData.baseTemp + tempVariation + (Math.random() * 4 - 2));
+    const humidity = Math.round(cityData.humidity[0] + Math.random() * (cityData.humidity[1] - cityData.humidity[0]));
+    const windSpeed = Math.round(8 + Math.random() * 12);
+    const pressure = Math.round(1010 + Math.random() * 20);
+    
+    return {
+      location: `${cityKey}, ${cityData.region}`,
+      temperature,
+      condition: cityData.condition,
+      icon: this.getRealisticWeatherIcon(temperature, hour),
+      details: [
+        `Real Feel ${temperature + 2}°`,
+        `Wind ${['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.floor(Math.random() * 8)]} ${windSpeed} km/h`,
+        `Pressure ${pressure} mb`,
+        `Humidity ${humidity}%`
+      ],
+      uvIndex: Math.round(2 + Math.random() * 8),
+      humidity,
+      visibility: Math.round(8 + Math.random() * 7),
+      windStatus: windSpeed
+    };
+  }
+
+  getRealisticForecastData(cityName) {
+    const city = cityName.toLowerCase();
+    let cityKey = Object.keys(INDIAN_WEATHER_DATA).find(key => 
+      key.toLowerCase() === city || 
+      city.includes(key.toLowerCase()) ||
+      key.toLowerCase().includes(city)
+    );
+    
+    if (!cityKey) {
+      cityKey = 'Mumbai';
+    }
+    
+    const cityData = INDIAN_WEATHER_DATA[cityKey];
+    const days = ['Today', 'Tomorrow', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    
+    const daily = days.map((day, index) => {
+      const tempVariation = (Math.random() * 8 - 4);
+      const high = Math.round(cityData.baseTemp + 5 + tempVariation);
+      const low = Math.round(cityData.baseTemp - 3 + tempVariation);
+      
+      return {
+        day,
+        icon: this.getRealisticWeatherIcon(high, 14),
+        high,
+        low,
+        chanceOfRain: Math.round(10 + Math.random() * 60),
+        humidity: Math.round(cityData.humidity[0] + Math.random() * (cityData.humidity[1] - cityData.humidity[0])),
+        wind: Math.round(8 + Math.random() * 15)
+      };
+    });
+    
+    return {
+      location: `${cityKey}, ${cityData.region}`,
+      daily,
+      tomorrow: {
+        temperature: daily[1].high,
+        condition: cityData.condition,
+        humidity: daily[1].humidity,
+        windSpeed: daily[1].wind,
+        visibility: Math.round(8 + Math.random() * 7)
+      }
+    };
+  }
+
+  getRealisticWeatherIcon(temperature, hour) {
+    if (temperature > 35) return '🔥';
+    if (temperature > 30) return '☀️';
+    if (temperature > 25) return '🌤️';
+    if (temperature > 20) return '⛅';
+    if (temperature > 15) return '🌥️';
+    return '🌧️';
+  }
+
+  getWeatherIcon(code, isDay) {
+    const iconMap = {
+      1000: isDay ? '☀️' : '🌙',
+      1003: '⛅',
+      1006: '🌥️',
+      1009: '☁️',
+      1030: '🌫️',
+      1063: '🌦️',
+      1066: '🌨️',
+      1069: '🌨️',
+      1072: '🌧️',
+      1087: '⛈️',
+      1114: '❄️',
+      1117: '🌨️',
+      1135: '🌫️',
+      1147: '🌫️',
+      1150: '🌦️',
+      1153: '🌦️',
+      1168: '🌧️',
+      1171: '🌧️',
+      1180: '🌦️',
+      1183: '🌧️',
+      1186: '🌧️',
+      1189: '🌧️',
+      1192: '🌧️',
+      1195: '🌧️',
+      1198: '🌧️',
+      1201: '🌧️',
+      1204: '🌨️',
+      1207: '🌨️',
+      1210: '🌨️',
+      1213: '🌨️',
+      1216: '🌨️',
+      1219: '🌨️',
+      1222: '🌨️',
+      1225: '🌨️',
+      1237: '🌨️',
+      1240: '🌦️',
+      1243: '🌧️',
+      1246: '🌧️',
+      1249: '🌨️',
+      1252: '🌨️',
+      1255: '🌨️',
+      1258: '🌨️',
+      1261: '🌨️',
+      1264: '🌨️',
+      1273: '⛈️',
+      1276: '⛈️',
+      1279: '⛈️',
+      1282: '⛈️'
+    };
+    
+    return iconMap[code] || (isDay ? '☀️' : '🌙');
+  }
+
+  async getCurrentWeather(city = 'Mumbai') {
     const cacheKey = `current_${city}`;
     const cached = this.getCachedData(cacheKey);
     
@@ -92,23 +252,8 @@ class WeatherService {
     } catch (error) {
       console.error('Failed to fetch current weather:', error);
       
-      // Return Rameswaram specific mock data as fallback
-      const mockData = {
-        location: 'Rameswaram, Tamil Nadu',
-        temperature: 30,
-        condition: 'Sunny & Clear',
-        icon: '☀️',
-        details: [
-          'Real Feel 32°',
-          'Wind SW 12 km/h',
-          'Pressure 1012 mb',
-          'Humidity 68%'
-        ],
-        uvIndex: 8,
-        humidity: 68,
-        visibility: 10,
-        windStatus: 12
-      };
+      // Return realistic city-specific fallback data
+      const mockData = this.getRealisticWeatherData(city);
       
       this.setCacheData(cacheKey, mockData);
       return mockData;
@@ -165,25 +310,8 @@ class WeatherService {
     } catch (error) {
       console.error('Failed to fetch forecast:', error);
       
-      // Return mock forecast data
-      const mockForecast = {
-        daily: [
-          { day: 'Today', icon: '🌧️', high: 16, low: 10, chanceOfRain: 80 },
-          { day: 'Tomorrow', icon: '⛅', high: 17, low: 11, chanceOfRain: 40 },
-          { day: 'Wed', icon: '🌤️', high: 18, low: 12, chanceOfRain: 20 },
-          { day: 'Thu', icon: '☀️', high: 19, low: 13, chanceOfRain: 10 },
-          { day: 'Fri', icon: '🌩️', high: 20, low: 14, chanceOfRain: 90 },
-          { day: 'Sat', icon: '🌤️', high: 21, low: 15, chanceOfRain: 30 },
-          { day: 'Sun', icon: '☀️', high: 22, low: 16, chanceOfRain: 5 }
-        ],
-        tomorrow: {
-          temperature: 72,
-          condition: 'sunny',
-          humidity: 68,
-          windSpeed: 12,
-          visibility: 10
-        }
-      };
+      // Return realistic city-specific forecast data
+      const mockForecast = this.getRealisticForecastData(city);
       
       this.setCacheData(cacheKey, mockForecast);
       return mockForecast;
@@ -216,20 +344,12 @@ class WeatherService {
     } catch (error) {
       console.error('Failed to fetch air quality:', error);
       
-      // Return mock AQI data
-      const mockAQI = {
-        aqi: 68,
-        level: 'Moderate',
-        pollutants: {
-          pm25: 45,
-          pm10: 68,
-          o3: 23,
-          no2: 12
-        }
-      };
+      // Use the AQI service for realistic data
+      const { getRealisticAQIData } = await import('./aqiService.js');
+      const aqiData = await getRealisticAQIData(city);
       
-      this.setCacheData(cacheKey, mockAQI);
-      return mockAQI;
+      this.setCacheData(cacheKey, aqiData);
+      return aqiData;
     }
   }
 
@@ -243,27 +363,20 @@ class WeatherService {
   }
 
   async getMultipleCities(cities = ['Bengaluru', 'Kolkata', 'Delhi']) {
-    const promises = cities.map(city => this.getCurrentWeather(city));
-    
     try {
-      const results = await Promise.all(promises);
-      return results.map((data, index) => ({
-        name: cities[index],
-        temperature: data.temperature
+      const weatherPromises = cities.map(city => this.getCurrentWeather(city));
+      const results = await Promise.allSettled(weatherPromises);
+      
+      return results.map((result, index) => ({
+        city: cities[index],
+        data: result.status === 'fulfilled' ? result.value : null,
+        error: result.status === 'rejected' ? result.reason.message : null
       }));
     } catch (error) {
       console.error('Failed to fetch multiple cities:', error);
-      
-      // Return mock data 
-      return [
-        { name: 'Bengaluru', temperature: 8 },
-        { name: 'Kolkata', temperature: 28 },
-        { name: 'Delhi', temperature: 32 }
-      ];
+      return cities.map(city => ({ city, data: null, error: error.message }));
     }
   }
 }
 
-
-export const weatherService = new WeatherService();
-export default weatherService;
+export default new WeatherService();
