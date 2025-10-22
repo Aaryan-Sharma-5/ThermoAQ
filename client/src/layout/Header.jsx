@@ -1,10 +1,10 @@
 import {
-  ChevronDown,
-  LogIn,
-  LogOut,
-  MapPin,
-  User,
-  UserPlus,
+    ChevronDown,
+    LogIn,
+    LogOut,
+    MapPin,
+    User,
+    UserPlus,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -24,10 +24,10 @@ const indianCities = [
   "Lucknow, Uttar Pradesh",
 ];
 
-export const Header = () => {
+export const Header = ({ onLocationChange }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [selectedCity, setSelectedCity] = useState("Select City");
+  const [selectedCity, setSelectedCity] = useState("Mumbai, Maharashtra");
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -126,6 +126,9 @@ export const Header = () => {
                       onClick={() => {
                         setSelectedCity(city);
                         setIsDropdownOpen(false);
+                        if (onLocationChange) {
+                          onLocationChange(city);
+                        }
                       }}
                       className="w-full px-4 py-2 text-left text-white transition-colors border-b hover:bg-white/10 border-white/10 last:border-b-0"
                     >

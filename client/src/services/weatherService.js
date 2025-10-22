@@ -1,4 +1,4 @@
-const WEATHER_API_KEY = import.meta.env.VITE_WEATHERAPI_KEY;
+const WEATHER_API_KEY = '8dc24606d7fd46a7a1991208250610';
 const WEATHER_API_BASE = 'http://api.weatherapi.com/v1';
 
 class WeatherService {
@@ -51,7 +51,7 @@ class WeatherService {
     });
   }
 
-  async getCurrentWeather(city = 'Mumbai') {
+  async getCurrentWeather(city = 'Rameswaram') {
     const cacheKey = `current_${city}`;
     const cached = this.getCachedData(cacheKey);
     
@@ -92,22 +92,22 @@ class WeatherService {
     } catch (error) {
       console.error('Failed to fetch current weather:', error);
       
-      // Return mock data as fallback
+      // Return Rameswaram specific mock data as fallback
       const mockData = {
-        location: city,
-        temperature: 16,
-        condition: 'Cloudy',
-        icon: '☁️',
+        location: 'Rameswaram, Tamil Nadu',
+        temperature: 30,
+        condition: 'Sunny & Clear',
+        icon: '☀️',
         details: [
-          'Real Feel 19°',
-          'Wind E 7 km/h',
-          'Pressure 1028 mb',
-          'Humidity 94%'
+          'Real Feel 32°',
+          'Wind SW 12 km/h',
+          'Pressure 1012 mb',
+          'Humidity 68%'
         ],
-        uvIndex: 5.50,
+        uvIndex: 8,
         humidity: 68,
-        visibility: 8.2,
-        windStatus: 12.5
+        visibility: 10,
+        windStatus: 12
       };
       
       this.setCacheData(cacheKey, mockData);
