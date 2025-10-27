@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import 'leaflet/dist/leaflet.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -146,28 +145,6 @@
   to {
     transform: rotate(360deg);
   }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.9;
-  }
-}
-
-/* Custom AQI Marker Styles */
-.custom-aqi-marker {
-  background: none !important;
-  border: none !important;
-}
-
-.custom-temp-marker {
-  background: none !important;
-  border: none !important;
 }
 
 button:focus-visible,
