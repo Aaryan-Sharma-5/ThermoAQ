@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Wind, Sun, Droplets, Eye } from 'lucide-react';
 import { Header } from '../layout/Header';
 import { 
   WeatherCard, 
@@ -44,34 +45,8 @@ const Dashboard = () => {
         
       } catch (error) {
         console.error('Failed to fetch weather data:', error);
-        
-        // Fallback data
-        const mockWeatherData = {
-          current: {
-            location: 'Mumbai, Maharashtra',
-            temperature: 16,
-            condition: 'Cloudy',
-            icon: '☁️',
-            details: [
-              'Real Feel 19°',
-              'Wind E 7 km/h',
-              'Pressure 1028 mb',
-              'Humidity 94%'
-            ]
-          },
-          uvIndex: 5.50,
-          humidity: 68,
-          visibility: 8.2,
-          windStatus: 12.5,
-          tomorrow: {
-            temperature: 72,
-            condition: 'sunny',
-            humidity: 68,
-            windSpeed: 12,
-            visibility: 10
-          }
-        };
-        setWeatherData(mockWeatherData);
+        // Show error state instead of mock data
+        setWeatherData(null);
       } finally {
         setLoading(false);
       }
@@ -117,28 +92,28 @@ const Dashboard = () => {
             title="Wind Status" 
             value={weatherData?.windStatus} 
             unit="km/h" 
-            icon="💨" 
+            icon={Wind} 
           />
           
           <MetricCard 
             title="UV Index" 
             value={weatherData?.uvIndex} 
             unit="Good" 
-            icon="☀️" 
+            icon={Sun} 
           />
           
           <MetricCard 
             title="Humidity" 
             value={weatherData?.humidity} 
             unit="%" 
-            icon="💧" 
+            icon={Droplets} 
           />
           
           <MetricCard 
             title="Visibility" 
             value={weatherData?.visibility} 
             unit="km" 
-            icon="👁️" 
+            icon={Eye} 
           />
 
           <TomorrowCard data={weatherData?.tomorrow} />

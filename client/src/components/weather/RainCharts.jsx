@@ -1,6 +1,9 @@
-
-export function RainCharts() {
-  const lineData = [
+export function RainCharts({ hourlyData, forecastData }) {
+  // Generate precipitation probability data from hourly forecast
+  const lineData = hourlyData?.slice(0, 7).map((hour, i) => ({
+    time: hour.time || `${10 + i}AM`,
+    value: hour.chanceOfRain || hour.precip || 0
+  })) || [
     { time: '10AM', value: 30 },
     { time: '11AM', value: 45 },
     { time: '12PM', value: 75 },
@@ -10,7 +13,11 @@ export function RainCharts() {
     { time: '4PM', value: 40 },
   ];
 
-  const barData = [
+  // Generate rain intensity data from forecast
+  const barData = hourlyData?.filter((_, i) => i % 3 === 0).slice(0, 8).map(hour => ({
+    time: hour.time || '12AM',
+    value: Math.min(100, (hour.precip || 0) * 20) // Scale precipitation to percentage
+  })) || [
     { time: '12AM', value: 30 },
     { time: '3AM', value: 40 },
     { time: '6AM', value: 35 },

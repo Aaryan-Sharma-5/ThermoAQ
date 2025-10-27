@@ -1,24 +1,54 @@
 import {
-  Cloud,
-  Droplets,
-  Sunrise,
-  Sunset,
-  Thermometer,
-  Wind,
+    Cloud,
+    CloudDrizzle,
+    CloudFog,
+    CloudLightning,
+    CloudRain,
+    CloudSnow,
+    CloudSun,
+    Cloudy,
+    Droplets,
+    Flame,
+    Moon,
+    Snowflake,
+    Sun,
+    Sunrise,
+    Sunset,
+    Thermometer,
+    Wind,
 } from 'lucide-react';
+
+// Helper function to get icon component from icon name
+const getIconComponent = (iconName) => {
+  const icons = {
+    Sun,
+    Moon,
+    CloudSun,
+    Cloud,
+    Cloudy,
+    CloudFog,
+    CloudRain,
+    CloudSnow,
+    CloudDrizzle,
+    CloudLightning,
+    Snowflake,
+    Flame
+  };
+  return icons[iconName] || Cloud;
+};
 
 export function TodayWeather({ weatherData, loading }) {
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-[#60a5fa] to-[#93c5fd] rounded-2xl p-6 relative overflow-hidden">
         <div className="animate-pulse">
-          <div className="h-4 bg-white/30 rounded mb-2 w-16"></div>
-          <div className="h-4 bg-white/30 rounded mb-4 w-24"></div>
-          <div className="h-20 bg-white/30 rounded mb-2 w-32"></div>
-          <div className="h-6 bg-white/30 rounded mb-6 w-28"></div>
+          <div className="w-16 h-4 mb-2 rounded bg-white/30"></div>
+          <div className="w-24 h-4 mb-4 rounded bg-white/30"></div>
+          <div className="w-32 h-20 mb-2 rounded bg-white/30"></div>
+          <div className="h-6 mb-6 rounded bg-white/30 w-28"></div>
           <div className="space-y-2">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-4 bg-white/30 rounded w-full"></div>
+              <div key={i} className="w-full h-4 rounded bg-white/30"></div>
             ))}
           </div>
         </div>
@@ -48,11 +78,17 @@ export function TodayWeather({ weatherData, loading }) {
             <p className="text-sm opacity-90">{currentDate}</p>
           </div>
           <div className="text-4xl opacity-90">
-            {weatherData?.icon || <Cloud className="w-16 h-16" />}
+            {weatherData?.icon ? 
+              (() => {
+                const IconComponent = getIconComponent(weatherData.icon);
+                return <IconComponent className="w-16 h-16" />;
+              })() : 
+              <Cloud className="w-16 h-16" />
+            }
           </div>
         </div>
         <div className="mb-6">
-          <h2 className="text-7xl font-bold mb-2">{weatherData?.temperature || '--'}°</h2>
+          <h2 className="mb-2 font-bold text-7xl">{weatherData?.temperature || '--'}°</h2>
           <p className="text-xl">{weatherData?.condition || 'Loading...'}</p>
         </div>
         <div className="space-y-2">
@@ -84,7 +120,7 @@ export function TodayWeather({ weatherData, loading }) {
         
         {/* Location Display */}
         {weatherData?.location && (
-          <div className="mt-4 pt-4 border-t border-white/20">
+          <div className="pt-4 mt-4 border-t border-white/20">
             <div className="text-sm opacity-90">
               📍 {weatherData.location}
             </div>

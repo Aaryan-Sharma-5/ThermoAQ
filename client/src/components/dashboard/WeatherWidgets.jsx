@@ -1,4 +1,40 @@
+import {
+  Cloud,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  CloudSun,
+  Cloudy,
+  Flame,
+  Moon,
+  Snowflake,
+  Sun
+} from 'lucide-react';
+
+// Helper function to get icon component from icon name
+const getIconComponent = (iconName) => {
+  const icons = {
+    Sun,
+    Moon,
+    CloudSun,
+    Cloud,
+    Cloudy,
+    CloudFog,
+    CloudRain,
+    CloudSnow,
+    CloudDrizzle,
+    CloudLightning,
+    Snowflake,
+    Flame
+  };
+  return icons[iconName] || Cloud;
+};
+
 export const WeatherCard = ({ data }) => {
+  const IconComponent = data?.icon ? getIconComponent(data.icon) : Cloud;
+  
   return (
     <div className="col-span-4 row-span-2 p-6 text-white bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl">
       <div className="flex items-start justify-between mb-4">
@@ -10,7 +46,7 @@ export const WeatherCard = ({ data }) => {
             day: 'numeric' 
           })}</p>
         </div>
-        <div className="text-4xl">{data?.icon || '☁️'}</div>
+        <IconComponent className="w-12 h-12" />
       </div>
       
       <div className="mb-6">
@@ -37,11 +73,18 @@ export const MetricCard = ({ title, value, unit, icon, color = 'gray' }) => {
     green: 'bg-green-600'
   };
 
+  // Check if icon is a component or string
+  const IconComponent = typeof icon === 'string' ? getIconComponent(icon) : icon;
+
   return (
     <div className={`col-span-2 ${colorClasses[color]} rounded-2xl p-4`}>
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-medium text-white">{title}</h3>
-        <span className="text-xl">{icon}</span>
+        {IconComponent && typeof IconComponent === 'function' ? (
+          <IconComponent className="w-5 h-5 text-white/80" />
+        ) : (
+          <span className="text-xl">{icon}</span>
+        )}
       </div>
       <div className="mb-1 text-2xl font-light text-white">{value}</div>
       <p className="text-xs text-gray-400">{unit}</p>
@@ -50,16 +93,22 @@ export const MetricCard = ({ title, value, unit, icon, color = 'gray' }) => {
 };
 
 export const WeeklyForecast = ({ data }) => {
-  // Fallback to mock data
-  const forecastData = data?.daily || [
-    { day: 'Mon', icon: '🌧️', high: 16, low: 10 },
-    { day: 'Tue', icon: '⛅', high: 17, low: 11 },
-    { day: 'Wed', icon: '🌤️', high: 18, low: 12 },
-    { day: 'Thu', icon: '☀️', high: 19, low: 13 },
-    { day: 'Fri', icon: '�️', high: 20, low: 14 },
-    { day: 'Sat', icon: '🌤️', high: 21, low: 15 },
-    { day: 'Sun', icon: '☀️', high: 22, low: 16 }
-  ];
+  // Use real forecast data only
+  const forecastData = data?.daily || [];
+  
+  // Show message if no data
+  if (!forecastData || forecastData.length === 0) {
+    return (
+      <div className="col-span-8 p-6 bg-gray-800 rounded-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-white">7-Day Forecast</h3>
+        </div>
+        <div className="flex items-center justify-center py-8 text-gray-400">
+          <p>Loading forecast data...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="col-span-8 p-6 bg-gray-800 rounded-2xl">
@@ -70,17 +119,20 @@ export const WeeklyForecast = ({ data }) => {
         </button>
       </div>
       <div className="flex justify-between">
-        {forecastData.slice(0, 7).map((dayData, index) => (
-          <div key={dayData.day || index} className="text-center">
-            <p className="mb-2 text-sm text-gray-400">{dayData.day}</p>
-            <div className="mb-2 text-2xl" title={dayData.condition}>{dayData.icon}</div>
-            <p className="text-sm text-white">{dayData.high}°</p>
-            <p className="text-xs text-gray-400">{dayData.low}°</p>
-            {dayData.chanceOfRain && (
-              <p className="mt-1 text-xs text-blue-400">{dayData.chanceOfRain}%</p>
-            )}
-          </div>
-        ))}
+        {forecastData.slice(0, 7).map((dayData, index) => {
+          const IconComponent = getIconComponent(dayData.icon);
+          return (
+            <div key={dayData.day || index} className="text-center">
+              <p className="mb-2 text-sm text-gray-400">{dayData.day}</p>
+              <IconComponent className="w-8 h-8 mx-auto mb-2 text-blue-400" />
+              <p className="text-sm text-white">{dayData.high}°</p>
+              <p className="text-xs text-gray-400">{dayData.low}°</p>
+              {dayData.chanceOfRain && (
+                <p className="mt-1 text-xs text-blue-400">{dayData.chanceOfRain}%</p>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

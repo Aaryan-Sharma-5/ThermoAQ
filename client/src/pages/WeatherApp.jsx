@@ -60,13 +60,13 @@ export function WeatherApp() {
 
   if (error) {
     return (
-      <div className="w-full min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="flex items-center justify-center w-full min-h-screen text-white bg-black">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4 text-red-400">Weather Service Error</h2>
-          <p className="text-gray-400 mb-6">{error}</p>
+          <h2 className="mb-4 text-2xl font-bold text-red-400">Weather Service Error</h2>
+          <p className="mb-6 text-gray-400">{error}</p>
           <button 
             onClick={() => fetchWeatherData(selectedLocation)}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            className="px-6 py-3 transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
           >
             Retry
           </button>
@@ -81,7 +81,7 @@ export function WeatherApp() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-black text-white">
+    <div className="w-full min-h-screen text-white bg-black">
       <PageHeader 
         title="Weather Dashboard"
         selectedLocation={`${selectedLocation}, India`}
@@ -90,9 +90,9 @@ export function WeatherApp() {
       />
       <main className="max-w-[1400px] mx-auto p-4 md:p-6 space-y-6">
         {/* Top Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <TodayWeather weatherData={weatherData} loading={loading} />
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             <WeeklyForecast forecastData={forecastData} loading={loading} />
             <WeatherInsights />
           </div>
@@ -100,11 +100,11 @@ export function WeatherApp() {
         {/* Stats Section */}
         <StatCards weatherData={weatherData} loading={loading} />
         {/* Tomorrow and Rain Chart */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <TomorrowWeather forecastData={forecastData} loading={loading} />
           </div>
-          <RainCharts forecastData={forecastData} loading={loading} />
+          <RainCharts hourlyData={forecastData?.hourly} forecastData={forecastData} loading={loading} />
         </div>
         {/* Other Cities */}
         <OtherCities multipleCitiesData={multipleCitiesData} loading={loading} />

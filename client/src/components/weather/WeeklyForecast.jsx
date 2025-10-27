@@ -1,4 +1,36 @@
-import { Cloud, CloudRain, CloudSnow, Sun } from 'lucide-react';
+import { 
+  Cloud, 
+  CloudRain, 
+  CloudSnow, 
+  Sun, 
+  CloudSun,
+  Cloudy,
+  CloudFog,
+  CloudDrizzle,
+  CloudLightning,
+  Snowflake,
+  Flame,
+  Moon
+} from 'lucide-react';
+
+// Helper function to get icon component from icon name
+const getIconComponent = (iconName) => {
+  const icons = {
+    Sun,
+    Moon,
+    CloudSun,
+    Cloud,
+    Cloudy,
+    CloudFog,
+    CloudRain,
+    CloudSnow,
+    CloudDrizzle,
+    CloudLightning,
+    Snowflake,
+    Flame
+  };
+  return icons[iconName] || Cloud;
+};
 
 export function WeeklyForecast({ forecastData, loading }) {
   if (loading) {
@@ -40,9 +72,11 @@ export function WeeklyForecast({ forecastData, loading }) {
       
       const forecastDay = forecastData?.daily?.[i];
       
-      // Default weather icon component based on temperature or condition
+      // Get icon component from API data or fallback based on condition
       let IconComponent = Sun;
-      if (forecastDay?.condition?.toLowerCase().includes('rain')) {
+      if (forecastDay?.icon) {
+        IconComponent = getIconComponent(forecastDay.icon);
+      } else if (forecastDay?.condition?.toLowerCase().includes('rain')) {
         IconComponent = CloudRain;
       } else if (forecastDay?.condition?.toLowerCase().includes('cloud')) {
         IconComponent = Cloud;
@@ -56,8 +90,7 @@ export function WeeklyForecast({ forecastData, loading }) {
         icon: IconComponent,
         temp: forecastDay ? `${forecastDay.high}°` : '--°',
         low: forecastDay ? `${forecastDay.low}°` : '--°',
-        bg: i === 0 ? 'bg-blue-600' : 'bg-gray-700',
-        realIcon: forecastDay?.icon
+        bg: i === 0 ? 'bg-blue-600' : 'bg-gray-700'
       });
     }
     
@@ -75,14 +108,7 @@ export function WeeklyForecast({ forecastData, loading }) {
         >
           <p className="text-sm mb-1">{day.day}</p>
           
-          {/* Use real emoji icon if available, otherwise fallback to Lucide icon */}
-          {day.realIcon ? (
-            <div className="text-2xl mb-2 h-8 flex items-center justify-center">
-              {day.realIcon}
-            </div>
-          ) : (
-            <day.icon className="w-8 h-8 mx-auto mb-2" />
-          )}
+          <day.icon className="w-8 h-8 mx-auto mb-2 text-blue-300" />
           
           <div className="space-y-1">
             <p className="text-lg font-bold">{day.temp}</p>

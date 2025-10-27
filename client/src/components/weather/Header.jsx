@@ -1,5 +1,24 @@
-import { ChevronDown, MapPin, Search, User } from 'lucide-react';
+import { ChevronDown, MapPin, Search, User, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSnow, CloudSun, Cloudy, Flame, Moon, Snowflake, Sun } from 'lucide-react';
 import { useState } from 'react';
+
+// Helper function to get icon component from icon name
+const getIconComponent = (iconName) => {
+  const icons = {
+    Sun,
+    Moon,
+    CloudSun,
+    Cloud,
+    Cloudy,
+    CloudFog,
+    CloudRain,
+    CloudSnow,
+    CloudDrizzle,
+    CloudLightning,
+    Snowflake,
+    Flame
+  };
+  return icons[iconName] || Cloud;
+};
 
 export function Header({ onLocationChange, selectedLocation, weatherData }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,7 +68,10 @@ export function Header({ onLocationChange, selectedLocation, weatherData }) {
         {/* Current Weather Display */}
         {weatherData && (
           <div className="hidden lg:flex items-center gap-3 text-sm">
-            <span className="text-xl">{weatherData.icon}</span>
+            {(() => {
+              const IconComponent = getIconComponent(weatherData.icon);
+              return <IconComponent className="w-6 h-6 text-blue-400" />;
+            })()}
             <div>
               <div className="text-white font-semibold">{weatherData.temperature}°C</div>
               <div className="text-gray-400 text-xs">{weatherData.condition}</div>

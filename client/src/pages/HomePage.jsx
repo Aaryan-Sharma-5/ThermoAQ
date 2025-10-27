@@ -1,10 +1,43 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Cloud, 
+  CloudDrizzle, 
+  CloudFog, 
+  CloudLightning, 
+  CloudRain, 
+  CloudSnow, 
+  CloudSun, 
+  Cloudy, 
+  Flame, 
+  Moon, 
+  Snowflake, 
+  Sun 
+} from 'lucide-react';
 import landingPageImage from "../assets/images/landingPage.png";
 import { WeatherForecastChart } from '../components/charts/ChartComponents';
 import { Header } from "../layout/Header";
 import aqiService from '../services/aqiService';
 import weatherService from '../services/weatherService';
+
+// Helper function to get icon component from icon name
+const getIconComponent = (iconName) => {
+  const icons = {
+    Sun,
+    Moon,
+    CloudSun,
+    Cloud,
+    Cloudy,
+    CloudFog,
+    CloudRain,
+    CloudSnow,
+    CloudDrizzle,
+    CloudLightning,
+    Snowflake,
+    Flame
+  };
+  return icons[iconName] || Cloud;
+};
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -534,7 +567,14 @@ const HomePage = () => {
                       View Dashboard
                     </button>
                     <div className="text-3xl transform group-hover:scale-110 transition-transform duration-300">
-                      {weatherData?.icon || '☀️'}
+                      {weatherData?.icon ? (
+                        (() => {
+                          const IconComponent = getIconComponent(weatherData.icon);
+                          return <IconComponent className="w-12 h-12 text-blue-400" />;
+                        })()
+                      ) : (
+                        <Sun className="w-12 h-12 text-yellow-400" />
+                      )}
                     </div>
                   </div>
                 </div>

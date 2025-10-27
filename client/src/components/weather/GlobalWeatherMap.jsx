@@ -1,7 +1,40 @@
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useState } from 'react';
 import { CircleMarker, MapContainer, Popup, TileLayer } from 'react-leaflet';
+import {
+  Cloud,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  CloudSun,
+  Cloudy,
+  Flame,
+  Moon,
+  Snowflake,
+  Sun
+} from 'lucide-react';
 import weatherService from '../../services/weatherService';
+
+// Helper function to get icon component from icon name
+const getIconComponent = (iconName) => {
+  const icons = {
+    Sun,
+    Moon,
+    CloudSun,
+    Cloud,
+    Cloudy,
+    CloudFog,
+    CloudRain,
+    CloudSnow,
+    CloudDrizzle,
+    CloudLightning,
+    Snowflake,
+    Flame
+  };
+  return icons[iconName] || Cloud;
+};
 
 export function GlobalWeatherMap({ multipleCitiesData, loading }) {
   const [globalWeatherData, setGlobalWeatherData] = useState([]);
@@ -66,7 +99,7 @@ export function GlobalWeatherMap({ multipleCitiesData, loading }) {
               color: getTemperatureColor(fallbackTemp),
               humidity: Math.round(40 + Math.random() * 40),
               windSpeed: Math.round(5 + Math.random() * 15),
-              icon: '🌡️'
+              icon: 'Cloud'
             };
           }
         });
@@ -84,9 +117,9 @@ export function GlobalWeatherMap({ multipleCitiesData, loading }) {
             temp: fallbackTemp,
             condition: 'Partly Cloudy',
             color: getTemperatureColor(fallbackTemp),
-            humidity: Math.round(40 + Math.random() * 40),
-            windSpeed: Math.round(5 + Math.random() * 15),
-            icon: '⛅'
+            humidity: Math.round(50 + Math.random() * 30),
+            windSpeed: Math.round(8 + Math.random() * 12),
+            icon: 'CloudSun'
           };
         });
         
@@ -133,36 +166,39 @@ export function GlobalWeatherMap({ multipleCitiesData, loading }) {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
-          {globalWeatherData.map((city, i) => (
-            <CircleMarker
-              key={i}
-              center={city.coords}
-              radius={8}
-              pathOptions={{
-                fillColor: city.color,
-                fillOpacity: 0.8,
-                color: city.color,
-                weight: 2,
-              }}
-            >
-              <Popup>
-                <div className="text-gray-900 min-w-[160px]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">{city.icon}</span>
-                    <p className="font-semibold text-base">{city.name}</p>
-                  </div>
-                  <div className="space-y-1 text-sm">
-                    <p className="font-medium text-lg">{city.temp}°C</p>
-                    <p className="text-gray-600">{city.condition}</p>
-                    <div className="border-t border-gray-200 pt-2 mt-2">
-                      <p className="text-xs">Humidity: {city.humidity}%</p>
-                      <p className="text-xs">Wind: {city.windSpeed} km/h</p>
+          {globalWeatherData.map((city, i) => {
+            const IconComponent = getIconComponent(city.icon);
+            return (
+              <CircleMarker
+                key={i}
+                center={city.coords}
+                radius={8}
+                pathOptions={{
+                  fillColor: city.color,
+                  fillOpacity: 0.8,
+                  color: city.color,
+                  weight: 2,
+                }}
+              >
+                <Popup>
+                  <div className="text-gray-900 min-w-[160px]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <IconComponent className="w-5 h-5 text-blue-600" />
+                      <p className="font-semibold text-base">{city.name}</p>
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      <p className="font-medium text-lg">{city.temp}°C</p>
+                      <p className="text-gray-600">{city.condition}</p>
+                      <div className="border-t border-gray-200 pt-2 mt-2">
+                        <p className="text-xs">Humidity: {city.humidity}%</p>
+                        <p className="text-xs">Wind: {city.windSpeed} km/h</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Popup>
-            </CircleMarker>
-          ))}
+                </Popup>
+              </CircleMarker>
+            );
+          })}
         </MapContainer>
       </div>
       

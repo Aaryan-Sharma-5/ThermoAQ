@@ -148,67 +148,67 @@ class WeatherService {
   }
 
   getRealisticWeatherIcon(temperature, hour) {
-    if (temperature > 35) return '🔥';
-    if (temperature > 30) return '☀️';
-    if (temperature > 25) return '🌤️';
-    if (temperature > 20) return '⛅';
-    if (temperature > 15) return '🌥️';
-    return '🌧️';
+    if (temperature > 35) return 'Flame';
+    if (temperature > 30) return 'Sun';
+    if (temperature > 25) return 'CloudSun';
+    if (temperature > 20) return 'Cloud';
+    if (temperature > 15) return 'Cloudy';
+    return 'CloudRain';
   }
 
   getWeatherIcon(code, isDay) {
     const iconMap = {
-      1000: isDay ? '☀️' : '🌙',
-      1003: '⛅',
-      1006: '🌥️',
-      1009: '☁️',
-      1030: '🌫️',
-      1063: '🌦️',
-      1066: '🌨️',
-      1069: '🌨️',
-      1072: '🌧️',
-      1087: '⛈️',
-      1114: '❄️',
-      1117: '🌨️',
-      1135: '🌫️',
-      1147: '🌫️',
-      1150: '🌦️',
-      1153: '🌦️',
-      1168: '🌧️',
-      1171: '🌧️',
-      1180: '🌦️',
-      1183: '🌧️',
-      1186: '🌧️',
-      1189: '🌧️',
-      1192: '🌧️',
-      1195: '🌧️',
-      1198: '🌧️',
-      1201: '🌧️',
-      1204: '🌨️',
-      1207: '🌨️',
-      1210: '🌨️',
-      1213: '🌨️',
-      1216: '🌨️',
-      1219: '🌨️',
-      1222: '🌨️',
-      1225: '🌨️',
-      1237: '🌨️',
-      1240: '🌦️',
-      1243: '🌧️',
-      1246: '🌧️',
-      1249: '🌨️',
-      1252: '🌨️',
-      1255: '🌨️',
-      1258: '🌨️',
-      1261: '🌨️',
-      1264: '🌨️',
-      1273: '⛈️',
-      1276: '⛈️',
-      1279: '⛈️',
-      1282: '⛈️'
+      1000: isDay ? 'Sun' : 'Moon',
+      1003: 'CloudSun',
+      1006: 'Cloudy',
+      1009: 'Cloud',
+      1030: 'CloudFog',
+      1063: 'CloudRain',
+      1066: 'CloudSnow',
+      1069: 'CloudSnow',
+      1072: 'CloudDrizzle',
+      1087: 'CloudLightning',
+      1114: 'Snowflake',
+      1117: 'CloudSnow',
+      1135: 'CloudFog',
+      1147: 'CloudFog',
+      1150: 'CloudDrizzle',
+      1153: 'CloudDrizzle',
+      1168: 'CloudRain',
+      1171: 'CloudRain',
+      1180: 'CloudRain',
+      1183: 'CloudRain',
+      1186: 'CloudRain',
+      1189: 'CloudRain',
+      1192: 'CloudRain',
+      1195: 'CloudRain',
+      1198: 'CloudRain',
+      1201: 'CloudRain',
+      1204: 'CloudSnow',
+      1207: 'CloudSnow',
+      1210: 'CloudSnow',
+      1213: 'CloudSnow',
+      1216: 'CloudSnow',
+      1219: 'CloudSnow',
+      1222: 'CloudSnow',
+      1225: 'CloudSnow',
+      1237: 'CloudSnow',
+      1240: 'CloudDrizzle',
+      1243: 'CloudRain',
+      1246: 'CloudRain',
+      1249: 'CloudSnow',
+      1252: 'CloudSnow',
+      1255: 'CloudSnow',
+      1258: 'CloudSnow',
+      1261: 'CloudSnow',
+      1264: 'CloudSnow',
+      1273: 'CloudLightning',
+      1276: 'CloudLightning',
+      1279: 'CloudLightning',
+      1282: 'CloudLightning'
     };
     
-    return iconMap[code] || (isDay ? '☀️' : '🌙');
+    return iconMap[code] || (isDay ? 'Sun' : 'Moon');
   }
 
   async getCurrentWeather(city = 'Mumbai') {
@@ -296,6 +296,19 @@ class WeatherService {
             wind: day.day.maxwind_kph
           };
         }),
+        hourly: apiData.forecast.forecastday[0]?.hour?.map(hour => {
+          const time = new Date(hour.time);
+          return {
+            time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+            temp: Math.round(hour.temp_c),
+            condition: hour.condition.text,
+            icon: this.getWeatherIcon(hour.condition.code, hour.is_day),
+            chanceOfRain: hour.chance_of_rain,
+            precip: hour.precip_mm,
+            humidity: hour.humidity,
+            windSpeed: hour.wind_kph
+          };
+        }) || [],
         tomorrow: {
           temperature: Math.round(apiData.forecast.forecastday[1]?.day.maxtemp_c || 22),
           condition: apiData.forecast.forecastday[1]?.day.condition.text || 'Sunny',

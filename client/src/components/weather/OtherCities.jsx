@@ -1,4 +1,36 @@
+import {
+  Cloud,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  CloudSun,
+  Cloudy,
+  Flame,
+  Moon,
+  Snowflake,
+  Sun
+} from 'lucide-react';
 
+// Helper function to get icon component from icon name
+const getIconComponent = (iconName) => {
+  const icons = {
+    Sun,
+    Moon,
+    CloudSun,
+    Cloud,
+    Cloudy,
+    CloudFog,
+    CloudRain,
+    CloudSnow,
+    CloudDrizzle,
+    CloudLightning,
+    Snowflake,
+    Flame
+  };
+  return icons[iconName] || Cloud;
+};
 
 export function OtherCities({ multipleCitiesData, loading }) {
   if (loading) {
@@ -28,11 +60,12 @@ export function OtherCities({ multipleCitiesData, loading }) {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {cities.map((cityData, i) => {
           const city = cityData.data;
+          const IconComponent = getIconComponent(city.icon);
           return (
             <div key={i} className="bg-[#252d3d] rounded-xl p-4 hover:bg-[#2d3548] transition-colors cursor-pointer">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium">{cityData.city}</h4>
-                <span className="text-xl">{city.icon}</span>
+                <IconComponent className="w-6 h-6 text-blue-400" />
               </div>
               <div className="text-2xl font-bold mb-1">{city.temperature}°C</div>
               <div className="text-sm text-gray-400">{city.condition}</div>
@@ -43,20 +76,11 @@ export function OtherCities({ multipleCitiesData, loading }) {
           );
         })}
         
-        {/* Show fallback cities if no data */}
+        {/* Show message if no data */}
         {cities.length === 0 && !loading && (
-          <>
-            {['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad'].map((cityName, i) => (
-              <div key={i} className="bg-[#252d3d] rounded-xl p-4 opacity-50">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium">{cityName}</h4>
-                  <span className="text-xl">🌡️</span>
-                </div>
-                <div className="text-2xl font-bold mb-1">--°C</div>
-                <div className="text-sm text-gray-400">Loading...</div>
-              </div>
-            ))}
-          </>
+          <div className="col-span-full text-center py-8">
+            <p className="text-gray-400">No city data available</p>
+          </div>
         )}
       </div>
     </div>
