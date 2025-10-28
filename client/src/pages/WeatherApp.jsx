@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { PageHeader } from '../components/PageHeader'
 import { GlobalWeatherMap } from '../components/weather/GlobalWeatherMap'
 import { HourlyForecast } from '../components/weather/HourlyForecast'
@@ -6,11 +6,14 @@ import { OtherCities } from '../components/weather/OtherCities'
 import { RainCharts } from '../components/weather/RainCharts'
 import { SevenDayForecast } from '../components/weather/SevenDayForecast'
 import { StatCards } from '../components/weather/StatCards'
+import { StatusBar } from '../components/weather/StatusBar'
 import { TodayWeather } from '../components/weather/TodayWeather'
 import { TomorrowWeather } from '../components/weather/TomorrowWeather'
+import { WeatherAlerts } from '../components/weather/WeatherAlerts'
 import { WeatherInsights } from '../components/weather/WeatherInsights'
 import { WeeklyForecast } from '../components/weather/WeeklyForecast'
 import weatherService from '../services/weatherService'
+import aqiService from '../services/aqiService'
 
 export function WeatherApp() {
   const [weatherData, setWeatherData] = useState(null)
@@ -19,15 +22,18 @@ export function WeatherApp() {
   const [selectedLocation, setSelectedLocation] = useState('Mumbai')
   const [multipleCitiesData, setMultipleCitiesData] = useState([])
   const [error, setError] = useState(null)
+  const [lastUpdated, setLastUpdated] = useState(null)
+  const [autoRefresh, setAutoRefresh] = useState(true)
+  const [aqiData, setAqiData] = useState(null)
 
-  // Function to handle location change
-  const handleLocationChange = (location) => {
-    setSelectedLocation(location)
-    fetchWeatherData(location)
-  }
+  // Default cities to show - memoized to prevent re-creation
+  const defaultCities = useMemo(() => 
+    ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad'], 
+    []
+  )
 
   // Fetch all weather data
-  const fetchWeatherData = async (location) => {
+  const fetchWeatherData = useCallback(async (location) => {
     setLoading(true)
     setError(null)
     
@@ -36,27 +42,59 @@ export function WeatherApp() {
       const cityName = location.includes(',') ? location.split(',')[0].trim() : location
 
       // Fetch all data in parallel
-      const [currentWeather, forecast, multipleCities] = await Promise.all([
+      const [currentWeather, forecast, multipleCities, aqi] = await Promise.all([
         weatherService.getCurrentWeather(cityName),
         weatherService.getForecast(cityName, 7),
-        weatherService.getMultipleCities(['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad'])
+        weatherService.getMultipleCities(defaultCities),
+        aqiService.getAirQuality(cityName)
       ])
 
       setWeatherData(currentWeather)
       setForecastData(forecast)
       setMultipleCitiesData(multipleCities)
+      setAqiData(aqi)
+      setLastUpdated(new Date())
     } catch (error) {
       console.error('Failed to fetch weather data:', error)
       setError('Failed to load weather data. Please try again.')
     } finally {
       setLoading(false)
     }
-  }
+  }, [defaultCities])
 
-  // Fetch data on component mount
+  // Fetch data on component mount and set up auto-refresh
   useEffect(() => {
     fetchWeatherData(selectedLocation)
-  }, [])
+    
+    // Set up auto-refresh every 10 minutes
+    let refreshInterval
+    if (autoRefresh) {
+      refreshInterval = setInterval(() => {
+        fetchWeatherData(selectedLocation)
+      }, 10 * 60 * 1000) // 10 minutes
+    }
+    
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval)
+      }
+    }
+  }, [selectedLocation, autoRefresh, fetchWeatherData])
+
+  // Function to handle refresh
+  const handleRefresh = () => {
+    fetchWeatherData(selectedLocation)
+  }
+
+  // Function to handle city updates (add/remove)
+  const handleCitiesUpdate = (updatedCities) => {
+    setMultipleCitiesData(updatedCities)
+  }
+
+  // Function to handle location change
+  const handleLocationChange = (location) => {
+    setSelectedLocation(location)
+  }
 
   if (error) {
     return (
@@ -75,11 +113,6 @@ export function WeatherApp() {
     )
   }
 
-  // Function to handle refresh
-  const handleRefresh = () => {
-    fetchWeatherData(selectedLocation)
-  }
-
   return (
     <div className="w-full min-h-screen text-white bg-black">
       <PageHeader 
@@ -88,7 +121,17 @@ export function WeatherApp() {
         onLocationChange={(location) => handleLocationChange(location.split(',')[0])}
         onRefresh={handleRefresh}
       />
+      <StatusBar
+        lastUpdated={lastUpdated}
+        onRefresh={handleRefresh}
+        autoRefresh={autoRefresh}
+        onToggleAutoRefresh={setAutoRefresh}
+        isRefreshing={loading}
+      />
       <main className="max-w-[1400px] mx-auto p-4 md:p-6 space-y-6">
+        {/* Weather Alerts */}
+        <WeatherAlerts weatherData={weatherData} aqiData={aqiData} />
+        
         {/* Top Section */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <TodayWeather weatherData={weatherData} loading={loading} />
@@ -107,7 +150,11 @@ export function WeatherApp() {
           <RainCharts hourlyData={forecastData?.hourly} forecastData={forecastData} loading={loading} />
         </div>
         {/* Other Cities */}
-        <OtherCities multipleCitiesData={multipleCitiesData} loading={loading} />
+        <OtherCities 
+          multipleCitiesData={multipleCitiesData} 
+          loading={loading}
+          onCitiesUpdate={handleCitiesUpdate}
+        />
         {/* 24-Hour Forecast */}
         <HourlyForecast selectedLocation={selectedLocation} loading={loading} />
         {/* 7-Day Forecast */}

@@ -34,16 +34,9 @@ const getIconComponent = (iconName) => {
 
 export function WeeklyForecast({ forecastData, loading }) {
   if (loading) {
-    const loadingDays = [...Array(7)].map((_, i) => ({
-      day: '---',
-      temp: '--°',
-      bg: 'bg-gray-700',
-      isLoading: true
-    }));
-
     return (
       <div className="grid grid-cols-7 gap-2">
-        {loadingDays.map((day, i) => (
+        {[...Array(7)].map((_, i) => (
           <div
             key={i}
             className="bg-gray-700 rounded-xl p-4 text-center animate-pulse"
@@ -100,24 +93,26 @@ export function WeeklyForecast({ forecastData, loading }) {
   const days = generateDays();
 
   return (
-    <div className="grid grid-cols-7 gap-2">
-      {days.map((day, i) => (
-        <div
-          key={i}
-          className={`${day.bg} rounded-xl p-4 text-center hover:scale-105 transition-transform cursor-pointer`}
-        >
-          <p className="text-sm mb-1">{day.day}</p>
-          
-          <day.icon className="w-8 h-8 mx-auto mb-2 text-blue-300" />
-          
-          <div className="space-y-1">
-            <p className="text-lg font-bold">{day.temp}</p>
-            {day.low && day.low !== '--°' && (
-              <p className="text-xs text-gray-300">{day.low}</p>
-            )}
+    <div>
+      <div className="grid grid-cols-7 gap-2">
+        {days.map((day, i) => (
+          <div
+            key={i}
+            className={`${day.bg} rounded-xl p-4 text-center hover:scale-105 transition-transform cursor-pointer`}
+          >
+            <p className="text-sm mb-1">{day.day}</p>
+            
+            <day.icon className="w-8 h-8 mx-auto mb-2 text-blue-300" />
+            
+            <div className="space-y-1">
+              <p className="text-lg font-bold">{day.temp}</p>
+              {day.low && (
+                <p className="text-xs text-gray-300">{day.low}</p>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

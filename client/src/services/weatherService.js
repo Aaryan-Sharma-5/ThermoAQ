@@ -1,7 +1,33 @@
-const WEATHER_API_KEY = '8dc24606d7fd46a7a1991208250610';
-const WEATHER_API_BASE = 'http://api.weatherapi.com/v1';
+// Open-Meteo API (Free, No API Key Required, 16-day forecast!)
+const OPEN_METEO_BASE = 'https://api.open-meteo.com/v1';
+const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1';
 
-// Realistic weather patterns for Indian cities
+// Major city coordinates for quick lookup (fallback if geocoding fails)
+const CITY_COORDINATES = {
+  'mumbai': { lat: 19.0760, lon: 72.8777, name: 'Mumbai', region: 'Maharashtra' },
+  'delhi': { lat: 28.6139, lon: 77.2090, name: 'Delhi', region: 'Delhi' },
+  'bangalore': { lat: 12.9716, lon: 77.5946, name: 'Bangalore', region: 'Karnataka' },
+  'bengaluru': { lat: 12.9716, lon: 77.5946, name: 'Bengaluru', region: 'Karnataka' },
+  'chennai': { lat: 13.0827, lon: 80.2707, name: 'Chennai', region: 'Tamil Nadu' },
+  'kolkata': { lat: 22.5726, lon: 88.3639, name: 'Kolkata', region: 'West Bengal' },
+  'hyderabad': { lat: 17.3850, lon: 78.4867, name: 'Hyderabad', region: 'Telangana' },
+  'pune': { lat: 18.5204, lon: 73.8567, name: 'Pune', region: 'Maharashtra' },
+  'ahmedabad': { lat: 23.0225, lon: 72.5714, name: 'Ahmedabad', region: 'Gujarat' },
+  'jaipur': { lat: 26.9124, lon: 75.7873, name: 'Jaipur', region: 'Rajasthan' },
+  'surat': { lat: 21.1702, lon: 72.8311, name: 'Surat', region: 'Gujarat' },
+  'london': { lat: 51.5074, lon: -0.1278, name: 'London', region: 'England' },
+  'new york': { lat: 40.7128, lon: -74.0060, name: 'New York', region: 'New York' },
+  'tokyo': { lat: 35.6762, lon: 139.6503, name: 'Tokyo', region: 'Tokyo' },
+  'paris': { lat: 48.8566, lon: 2.3522, name: 'Paris', region: 'Île-de-France' },
+  'sydney': { lat: -33.8688, lon: 151.2093, name: 'Sydney', region: 'New South Wales' },
+  'singapore': { lat: 1.3521, lon: 103.8198, name: 'Singapore', region: 'Singapore' },
+  'dubai': { lat: 25.2048, lon: 55.2708, name: 'Dubai', region: 'Dubai' },
+  'los angeles': { lat: 34.0522, lon: -118.2437, name: 'Los Angeles', region: 'California' },
+  'chicago': { lat: 41.8781, lon: -87.6298, name: 'Chicago', region: 'Illinois' },
+  'toronto': { lat: 43.6532, lon: -79.3832, name: 'Toronto', region: 'Ontario' },
+};
+
+// Realistic weather patterns for Indian cities (fallback data)
 const INDIAN_WEATHER_DATA = {
   'Delhi': {
     baseTemp: 25, region: 'Delhi', tempRange: [12, 38], humidity: [30, 75], condition: 'Partly Cloudy'
@@ -56,6 +82,333 @@ class WeatherService {
     });
   }
 
+  // Geocode city name to coordinates using Open-Meteo Geocoding API
+  async geocodeCity(cityName) {
+    const cacheKey = `geocode_${cityName.toLowerCase()}`;
+    const cached = this.getCachedData(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+
+    // Check if we have it in our local database first
+    const localCoords = CITY_COORDINATES[cityName.toLowerCase()];
+    if (localCoords) {
+      this.setCacheData(cacheKey, localCoords);
+      return localCoords;
+    }
+
+    try {
+      const url = `${GEOCODING_API}/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Geocoding error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.results || data.results.length === 0) {
+        throw new Error('City not found');
+      }
+      
+      const result = data.results[0];
+      const coords = {
+        lat: result.latitude,
+        lon: result.longitude,
+        name: result.name,
+        region: result.admin1 || result.country || ''
+      };
+      
+      this.setCacheData(cacheKey, coords);
+      return coords;
+    } catch (error) {
+      console.error('Geocoding failed:', error);
+      // Return Mumbai as default
+      return CITY_COORDINATES['mumbai'];
+    }
+  }
+
+  // Map Open-Meteo weather codes to Lucide icons
+  getWeatherIcon(code, isDay = 1) {
+    const iconMap = {
+      0: isDay ? 'Sun' : 'Moon',        // Clear sky
+      1: 'Sun',                          // Mainly clear
+      2: 'CloudSun',                     // Partly cloudy
+      3: 'Cloudy',                       // Overcast
+      45: 'CloudFog',                    // Fog
+      48: 'CloudFog',                    // Depositing rime fog
+      51: 'CloudDrizzle',                // Light drizzle
+      53: 'CloudDrizzle',                // Moderate drizzle
+      55: 'CloudDrizzle',                // Dense drizzle
+      56: 'CloudDrizzle',                // Freezing drizzle
+      57: 'CloudDrizzle',                // Dense freezing drizzle
+      61: 'CloudRain',                   // Slight rain
+      63: 'CloudRain',                   // Moderate rain
+      65: 'CloudRain',                   // Heavy rain
+      66: 'CloudRain',                   // Freezing rain
+      67: 'CloudRain',                   // Heavy freezing rain
+      71: 'CloudSnow',                   // Slight snow
+      73: 'CloudSnow',                   // Moderate snow
+      75: 'CloudSnow',                   // Heavy snow
+      77: 'Snowflake',                   // Snow grains
+      80: 'CloudRain',                   // Slight rain showers
+      81: 'CloudRain',                   // Moderate rain showers
+      82: 'CloudRain',                   // Violent rain showers
+      85: 'CloudSnow',                   // Slight snow showers
+      86: 'CloudSnow',                   // Heavy snow showers
+      95: 'CloudLightning',              // Thunderstorm
+      96: 'CloudLightning',              // Thunderstorm with hail
+      99: 'CloudLightning'               // Thunderstorm with heavy hail
+    };
+    
+    return iconMap[code] || (isDay ? 'Sun' : 'Moon');
+  }
+
+  getWeatherConditionText(code) {
+    const conditionMap = {
+      0: 'Clear sky',
+      1: 'Mainly clear',
+      2: 'Partly cloudy',
+      3: 'Overcast',
+      45: 'Foggy',
+      48: 'Depositing rime fog',
+      51: 'Light drizzle',
+      53: 'Moderate drizzle',
+      55: 'Dense drizzle',
+      56: 'Light freezing drizzle',
+      57: 'Dense freezing drizzle',
+      61: 'Slight rain',
+      63: 'Moderate rain',
+      65: 'Heavy rain',
+      66: 'Light freezing rain',
+      67: 'Heavy freezing rain',
+      71: 'Slight snow',
+      73: 'Moderate snow',
+      75: 'Heavy snow',
+      77: 'Snow grains',
+      80: 'Slight rain showers',
+      81: 'Moderate rain showers',
+      82: 'Violent rain showers',
+      85: 'Slight snow showers',
+      86: 'Heavy snow showers',
+      95: 'Thunderstorm',
+      96: 'Thunderstorm with slight hail',
+      99: 'Thunderstorm with heavy hail'
+    };
+    
+    return conditionMap[code] || 'Clear';
+  }
+
+  async getCurrentWeather(city = 'Mumbai') {
+    const cacheKey = `current_${city}`;
+    const cached = this.getCachedData(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      // Get coordinates for the city
+      const coords = await this.geocodeCity(city);
+      
+      // Fetch current weather from Open-Meteo
+      const url = `${OPEN_METEO_BASE}/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,pressure_msl,wind_speed_10m,wind_direction_10m,uv_index&timezone=auto`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Open-Meteo error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const current = data.current;
+      
+      // Convert wind direction to cardinal direction
+      const getWindDirection = (degrees) => {
+        const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+        return directions[Math.round(degrees / 22.5) % 16];
+      };
+      
+      const transformedData = {
+        location: `${coords.name}, ${coords.region}`,
+        temperature: Math.round(current.temperature_2m),
+        condition: this.getWeatherConditionText(current.weather_code),
+        icon: this.getWeatherIcon(current.weather_code, current.is_day),
+        details: [
+          `Real Feel ${Math.round(current.apparent_temperature)}°`,
+          `Wind ${getWindDirection(current.wind_direction_10m)} ${Math.round(current.wind_speed_10m)} km/h`,
+          `Pressure ${Math.round(current.pressure_msl)} mb`,
+          `Humidity ${current.relative_humidity_2m}%`
+        ],
+        uvIndex: current.uv_index || 0,
+        humidity: current.relative_humidity_2m,
+        visibility: 10, // Open-Meteo doesn't provide visibility in free tier
+        windStatus: Math.round(current.wind_speed_10m),
+        aqi: null // Will be fetched separately
+      };
+      
+      this.setCacheData(cacheKey, transformedData);
+      return transformedData;
+    } catch (error) {
+      console.error('Failed to fetch current weather:', error);
+      
+      // Return realistic city-specific fallback data
+      const mockData = this.getRealisticWeatherData(city);
+      
+      this.setCacheData(cacheKey, mockData);
+      return mockData;
+    }
+  }
+
+  async getForecast(city = 'Mumbai', days = 7) {
+    const cacheKey = `forecast_${city}_${days}`;
+    const cached = this.getCachedData(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      // Get coordinates for the city
+      const coords = await this.geocodeCity(city);
+      
+      // Fetch forecast from Open-Meteo (up to 16 days available!)
+      const url = `${OPEN_METEO_BASE}/forecast?latitude=${coords.lat}&longitude=${coords.lon}&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=auto&forecast_days=${Math.min(days, 16)}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Open-Meteo forecast error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      const transformedForecast = {
+        location: `${coords.name}, ${coords.region}`,
+        daily: data.daily.time.map((dateStr, index) => {
+          const date = new Date(dateStr);
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          
+          return {
+            day: index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : dayNames[date.getDay()],
+            date: dateStr,
+            icon: this.getWeatherIcon(data.daily.weather_code[index], 1),
+            high: Math.round(data.daily.temperature_2m_max[index]),
+            low: Math.round(data.daily.temperature_2m_min[index]),
+            condition: this.getWeatherConditionText(data.daily.weather_code[index]),
+            chanceOfRain: data.daily.precipitation_probability_max[index] || 0,
+            humidity: 65, // Daily average not provided by Open-Meteo free tier
+            wind: Math.round(data.daily.wind_speed_10m_max[index])
+          };
+        }),
+        hourly: data.hourly.time.slice(0, 24).map((timeStr, index) => {
+          const time = new Date(timeStr);
+          return {
+            time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+            temp: Math.round(data.hourly.temperature_2m[index]),
+            condition: this.getWeatherConditionText(data.hourly.weather_code[index]),
+            icon: this.getWeatherIcon(data.hourly.weather_code[index], time.getHours() >= 6 && time.getHours() < 18 ? 1 : 0),
+            chanceOfRain: data.hourly.precipitation_probability[index] || 0,
+            precip: data.hourly.precipitation[index] || 0,
+            humidity: data.hourly.relative_humidity_2m[index],
+            windSpeed: Math.round(data.hourly.wind_speed_10m[index])
+          };
+        }),
+        tomorrow: {
+          temperature: Math.round(data.daily.temperature_2m_max[1] || 22),
+          condition: this.getWeatherConditionText(data.daily.weather_code[1]),
+          humidity: 65,
+          windSpeed: Math.round(data.daily.wind_speed_10m_max[1] || 12),
+          visibility: 10
+        }
+      };
+      
+      this.setCacheData(cacheKey, transformedForecast);
+      return transformedForecast;
+    } catch (error) {
+      console.error('Failed to fetch forecast:', error);
+      
+      // Return realistic city-specific forecast data
+      const mockForecast = this.getRealisticForecastData(city);
+      
+      this.setCacheData(cacheKey, mockForecast);
+      return mockForecast;
+    }
+  }
+
+  async getAirQuality(city = 'Mumbai') {
+    const cacheKey = `aqi_${city}`;
+    const cached = this.getCachedData(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      // Get coordinates for the city
+      const coords = await this.geocodeCity(city);
+      
+      // Fetch air quality from Open-Meteo
+      const url = `${OPEN_METEO_BASE}/air-quality?latitude=${coords.lat}&longitude=${coords.lon}&current=us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone&timezone=auto`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Open-Meteo AQI error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const current = data.current;
+      
+      const aqiData = {
+        aqi: current.us_aqi || 50,
+        level: this.getAQILevel(current.us_aqi || 50),
+        pm25: current.pm2_5 || 0,
+        pm10: current.pm10 || 0,
+        co: current.carbon_monoxide || 0,
+        no2: current.nitrogen_dioxide || 0,
+        so2: current.sulphur_dioxide || 0,
+        o3: current.ozone || 0
+      };
+      
+      this.setCacheData(cacheKey, aqiData);
+      return aqiData;
+    } catch (error) {
+      console.error('Failed to fetch air quality:', error);
+      
+      // Use the AQI service for realistic data
+      const { getRealisticAQIData } = await import('./aqiService.js');
+      const aqiData = await getRealisticAQIData(city);
+      
+      this.setCacheData(cacheKey, aqiData);
+      return aqiData;
+    }
+  }
+
+  getAQILevel(aqi) {
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
+  }
+
+  async getMultipleCities(cities = ['Bengaluru', 'Kolkata', 'Delhi']) {
+    try {
+      const weatherPromises = cities.map(city => this.getCurrentWeather(city));
+      const results = await Promise.allSettled(weatherPromises);
+      
+      return results.map((result, index) => ({
+        city: cities[index],
+        data: result.status === 'fulfilled' ? result.value : null,
+        error: result.status === 'rejected' ? result.reason.message : null
+      }));
+    } catch (error) {
+      console.error('Failed to fetch multiple cities:', error);
+      return cities.map(city => ({ city, data: null, error: error.message }));
+    }
+  }
+
+  // Fallback method for realistic weather data
   getRealisticWeatherData(cityName) {
     const city = cityName.toLowerCase();
     let cityKey = Object.keys(INDIAN_WEATHER_DATA).find(key => 
@@ -118,25 +471,44 @@ class WeatherService {
     const cityData = INDIAN_WEATHER_DATA[cityKey];
     const days = ['Today', 'Tomorrow', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     
-    const daily = days.map((day, index) => {
+    const daily = days.map((day) => {
       const tempVariation = (Math.random() * 8 - 4);
       const high = Math.round(cityData.baseTemp + 5 + tempVariation);
       const low = Math.round(cityData.baseTemp - 3 + tempVariation);
       
       return {
         day,
-        icon: this.getRealisticWeatherIcon(high, 14),
+        date: new Date(Date.now() + days.indexOf(day) * 86400000).toISOString().split('T')[0],
+        icon: this.getWeatherIcon(Math.random() > 0.5 ? 0 : 2, 1),
         high,
         low,
+        condition: cityData.condition,
         chanceOfRain: Math.round(10 + Math.random() * 60),
         humidity: Math.round(cityData.humidity[0] + Math.random() * (cityData.humidity[1] - cityData.humidity[0])),
         wind: Math.round(8 + Math.random() * 15)
+      };
+    });
+
+    // Generate hourly data for today
+    const hourly = Array.from({ length: 24 }, (_, i) => {
+      const hour = new Date();
+      hour.setHours(i, 0, 0, 0);
+      return {
+        time: hour.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        temp: Math.round(cityData.baseTemp + Math.random() * 6 - 3),
+        condition: cityData.condition,
+        icon: this.getWeatherIcon(Math.random() > 0.7 ? 3 : 0, i >= 6 && i < 18 ? 1 : 0),
+        chanceOfRain: Math.round(Math.random() * 40),
+        precip: Math.random() * 2,
+        humidity: Math.round(cityData.humidity[0] + Math.random() * (cityData.humidity[1] - cityData.humidity[0])),
+        windSpeed: Math.round(8 + Math.random() * 12)
       };
     });
     
     return {
       location: `${cityKey}, ${cityData.region}`,
       daily,
+      hourly,
       tomorrow: {
         temperature: daily[1].high,
         condition: cityData.condition,
@@ -145,250 +517,6 @@ class WeatherService {
         visibility: Math.round(8 + Math.random() * 7)
       }
     };
-  }
-
-  getRealisticWeatherIcon(temperature, hour) {
-    if (temperature > 35) return 'Flame';
-    if (temperature > 30) return 'Sun';
-    if (temperature > 25) return 'CloudSun';
-    if (temperature > 20) return 'Cloud';
-    if (temperature > 15) return 'Cloudy';
-    return 'CloudRain';
-  }
-
-  getWeatherIcon(code, isDay) {
-    const iconMap = {
-      1000: isDay ? 'Sun' : 'Moon',
-      1003: 'CloudSun',
-      1006: 'Cloudy',
-      1009: 'Cloud',
-      1030: 'CloudFog',
-      1063: 'CloudRain',
-      1066: 'CloudSnow',
-      1069: 'CloudSnow',
-      1072: 'CloudDrizzle',
-      1087: 'CloudLightning',
-      1114: 'Snowflake',
-      1117: 'CloudSnow',
-      1135: 'CloudFog',
-      1147: 'CloudFog',
-      1150: 'CloudDrizzle',
-      1153: 'CloudDrizzle',
-      1168: 'CloudRain',
-      1171: 'CloudRain',
-      1180: 'CloudRain',
-      1183: 'CloudRain',
-      1186: 'CloudRain',
-      1189: 'CloudRain',
-      1192: 'CloudRain',
-      1195: 'CloudRain',
-      1198: 'CloudRain',
-      1201: 'CloudRain',
-      1204: 'CloudSnow',
-      1207: 'CloudSnow',
-      1210: 'CloudSnow',
-      1213: 'CloudSnow',
-      1216: 'CloudSnow',
-      1219: 'CloudSnow',
-      1222: 'CloudSnow',
-      1225: 'CloudSnow',
-      1237: 'CloudSnow',
-      1240: 'CloudDrizzle',
-      1243: 'CloudRain',
-      1246: 'CloudRain',
-      1249: 'CloudSnow',
-      1252: 'CloudSnow',
-      1255: 'CloudSnow',
-      1258: 'CloudSnow',
-      1261: 'CloudSnow',
-      1264: 'CloudSnow',
-      1273: 'CloudLightning',
-      1276: 'CloudLightning',
-      1279: 'CloudLightning',
-      1282: 'CloudLightning'
-    };
-    
-    return iconMap[code] || (isDay ? 'Sun' : 'Moon');
-  }
-
-  async getCurrentWeather(city = 'Mumbai') {
-    const cacheKey = `current_${city}`;
-    const cached = this.getCachedData(cacheKey);
-    
-    if (cached) {
-      return cached;
-    }
-
-    try {
-      const url = `${WEATHER_API_BASE}/current.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(city)}&aqi=yes`;
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`WeatherAPI error: ${response.status}`);
-      }
-      
-      const apiData = await response.json();
-      
-      const transformedData = {
-        location: `${apiData.location.name}, ${apiData.location.region}`,
-        temperature: Math.round(apiData.current.temp_c),
-        condition: apiData.current.condition.text,
-        icon: this.getWeatherIcon(apiData.current.condition.code, apiData.current.is_day),
-        details: [
-          `Real Feel ${Math.round(apiData.current.feelslike_c)}°`,
-          `Wind ${apiData.current.wind_dir} ${apiData.current.wind_kph} km/h`,
-          `Pressure ${apiData.current.pressure_mb} mb`,
-          `Humidity ${apiData.current.humidity}%`
-        ],
-        uvIndex: apiData.current.uv,
-        humidity: apiData.current.humidity,
-        visibility: apiData.current.vis_km,
-        windStatus: apiData.current.wind_kph,
-        aqi: apiData.current.air_quality ? Math.round(apiData.current.air_quality.pm2_5) : null
-      };
-      
-      this.setCacheData(cacheKey, transformedData);
-      return transformedData;
-    } catch (error) {
-      console.error('Failed to fetch current weather:', error);
-      
-      // Return realistic city-specific fallback data
-      const mockData = this.getRealisticWeatherData(city);
-      
-      this.setCacheData(cacheKey, mockData);
-      return mockData;
-    }
-  }
-
-  async getForecast(city = 'Mumbai', days = 7) {
-    const cacheKey = `forecast_${city}_${days}`;
-    const cached = this.getCachedData(cacheKey);
-    
-    if (cached) {
-      return cached;
-    }
-
-    try {
-      const url = `${WEATHER_API_BASE}/forecast.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(city)}&days=${days}&aqi=no&alerts=no`;
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`WeatherAPI forecast error: ${response.status}`);
-      }
-      
-      const apiData = await response.json();
-      
-      const transformedForecast = {
-        location: `${apiData.location.name}, ${apiData.location.region}`,
-        daily: apiData.forecast.forecastday.map((day, index) => {
-          const date = new Date(day.date);
-          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-          
-          return {
-            day: index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : dayNames[date.getDay()],
-            date: day.date,
-            icon: this.getWeatherIcon(day.day.condition.code, 1),
-            high: Math.round(day.day.maxtemp_c),
-            low: Math.round(day.day.mintemp_c),
-            condition: day.day.condition.text,
-            chanceOfRain: day.day.daily_chance_of_rain,
-            humidity: day.day.avghumidity,
-            wind: day.day.maxwind_kph
-          };
-        }),
-        hourly: apiData.forecast.forecastday[0]?.hour?.map(hour => {
-          const time = new Date(hour.time);
-          return {
-            time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
-            temp: Math.round(hour.temp_c),
-            condition: hour.condition.text,
-            icon: this.getWeatherIcon(hour.condition.code, hour.is_day),
-            chanceOfRain: hour.chance_of_rain,
-            precip: hour.precip_mm,
-            humidity: hour.humidity,
-            windSpeed: hour.wind_kph
-          };
-        }) || [],
-        tomorrow: {
-          temperature: Math.round(apiData.forecast.forecastday[1]?.day.maxtemp_c || 22),
-          condition: apiData.forecast.forecastday[1]?.day.condition.text || 'Sunny',
-          humidity: apiData.forecast.forecastday[1]?.day.avghumidity || 68,
-          windSpeed: Math.round(apiData.forecast.forecastday[1]?.day.maxwind_kph || 12),
-          visibility: Math.round(apiData.forecast.forecastday[1]?.day.avgvis_km || 10)
-        }
-      };
-      
-      this.setCacheData(cacheKey, transformedForecast);
-      return transformedForecast;
-    } catch (error) {
-      console.error('Failed to fetch forecast:', error);
-      
-      // Return realistic city-specific forecast data
-      const mockForecast = this.getRealisticForecastData(city);
-      
-      this.setCacheData(cacheKey, mockForecast);
-      return mockForecast;
-    }
-  }
-
-  async getAirQuality(city = 'Mumbai') {
-    const cacheKey = `aqi_${city}`;
-    const cached = this.getCachedData(cacheKey);
-    
-    if (cached) {
-      return cached;
-    }
-
-    try {
-      const currentWeather = await this.getCurrentWeather(city);
-      
-      if (currentWeather.aqi) {
-        const aqiData = {
-          aqi: currentWeather.aqi,
-          level: this.getAQILevel(currentWeather.aqi),
-          pm25: currentWeather.aqi
-        };
-        
-        this.setCacheData(cacheKey, aqiData);
-        return aqiData;
-      }
-      
-      throw new Error('AQI data not available');
-    } catch (error) {
-      console.error('Failed to fetch air quality:', error);
-      
-      // Use the AQI service for realistic data
-      const { getRealisticAQIData } = await import('./aqiService.js');
-      const aqiData = await getRealisticAQIData(city);
-      
-      this.setCacheData(cacheKey, aqiData);
-      return aqiData;
-    }
-  }
-
-  getAQILevel(aqi) {
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy for Sensitive Groups';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
-  }
-
-  async getMultipleCities(cities = ['Bengaluru', 'Kolkata', 'Delhi']) {
-    try {
-      const weatherPromises = cities.map(city => this.getCurrentWeather(city));
-      const results = await Promise.allSettled(weatherPromises);
-      
-      return results.map((result, index) => ({
-        city: cities[index],
-        data: result.status === 'fulfilled' ? result.value : null,
-        error: result.status === 'rejected' ? result.reason.message : null
-      }));
-    } catch (error) {
-      console.error('Failed to fetch multiple cities:', error);
-      return cities.map(city => ({ city, data: null, error: error.message }));
-    }
   }
 }
 

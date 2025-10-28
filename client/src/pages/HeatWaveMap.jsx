@@ -1,8 +1,9 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.heat';
 import { AlertTriangleIcon, CloudIcon, LoaderIcon, MinusIcon, PlusIcon, ThermometerIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { useEffect, useRef, useState } from 'react';
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import { PageHeader } from '../components/PageHeader';
 import aqiService from '../services/aqiService';
 import weatherService from '../services/weatherService';
@@ -60,7 +61,120 @@ const MAJOR_CITIES = [
   { name: 'Surat', position: [21.1702, 72.8311] }
 ];
 
-function MapView({ citiesData, isLoading }) {
+// Expanded cities across India for comprehensive heatmap
+const INDIA_TEMPERATURE_GRID = [
+  // North India
+  { name: 'Srinagar', lat: 34.0837, lon: 74.7973 },
+  { name: 'Jammu', lat: 32.7266, lon: 74.8570 },
+  { name: 'Amritsar', lat: 31.6340, lon: 74.8723 },
+  { name: 'Chandigarh', lat: 30.7333, lon: 76.7794 },
+  { name: 'Shimla', lat: 31.1048, lon: 77.1734 },
+  { name: 'Dehradun', lat: 30.3165, lon: 78.0322 },
+  { name: 'Delhi', lat: 28.6139, lon: 77.2090 },
+  { name: 'Jaipur', lat: 26.9124, lon: 75.7873 },
+  { name: 'Lucknow', lat: 26.8467, lon: 80.9462 },
+  { name: 'Kanpur', lat: 26.4499, lon: 80.3319 },
+  { name: 'Agra', lat: 27.1767, lon: 78.0081 },
+  { name: 'Varanasi', lat: 25.3176, lon: 82.9739 },
+  { name: 'Patna', lat: 25.5941, lon: 85.1376 },
+  
+  // West India
+  { name: 'Ahmedabad', lat: 23.0225, lon: 72.5714 },
+  { name: 'Surat', lat: 21.1702, lon: 72.8311 },
+  { name: 'Mumbai', lat: 19.0760, lon: 72.8777 },
+  { name: 'Pune', lat: 18.5204, lon: 73.8567 },
+  { name: 'Nagpur', lat: 21.1458, lon: 79.0882 },
+  { name: 'Nashik', lat: 19.9975, lon: 73.7898 },
+  { name: 'Rajkot', lat: 22.3039, lon: 70.8022 },
+  { name: 'Vadodara', lat: 22.3072, lon: 73.1812 },
+  { name: 'Indore', lat: 22.7196, lon: 75.8577 },
+  { name: 'Bhopal', lat: 23.2599, lon: 77.4126 },
+  
+  // South India
+  { name: 'Hyderabad', lat: 17.3850, lon: 78.4867 },
+  { name: 'Bangalore', lat: 12.9716, lon: 77.5946 },
+  { name: 'Chennai', lat: 13.0827, lon: 80.2707 },
+  { name: 'Coimbatore', lat: 11.0168, lon: 76.9558 },
+  { name: 'Kochi', lat: 9.9312, lon: 76.2673 },
+  { name: 'Thiruvananthapuram', lat: 8.5241, lon: 76.9366 },
+  { name: 'Mysore', lat: 12.2958, lon: 76.6394 },
+  { name: 'Mangalore', lat: 12.9141, lon: 74.8560 },
+  { name: 'Visakhapatnam', lat: 17.6868, lon: 83.2185 },
+  { name: 'Vijayawada', lat: 16.5062, lon: 80.6480 },
+  { name: 'Tirupati', lat: 13.6288, lon: 79.4192 },
+  { name: 'Madurai', lat: 9.9252, lon: 78.1198 },
+  
+  // East India
+  { name: 'Kolkata', lat: 22.5726, lon: 88.3639 },
+  { name: 'Bhubaneswar', lat: 20.2961, lon: 85.8245 },
+  { name: 'Cuttack', lat: 20.4625, lon: 85.8828 },
+  { name: 'Ranchi', lat: 23.3441, lon: 85.3096 },
+  { name: 'Guwahati', lat: 26.1445, lon: 91.7362 },
+  { name: 'Imphal', lat: 24.8170, lon: 93.9368 },
+  { name: 'Shillong', lat: 25.5788, lon: 91.8933 },
+  { name: 'Agartala', lat: 23.8315, lon: 91.2868 },
+  
+  // Central India
+  { name: 'Raipur', lat: 21.2514, lon: 81.6296 },
+  { name: 'Jabalpur', lat: 23.1815, lon: 79.9864 },
+  { name: 'Gwalior', lat: 26.2183, lon: 78.1828 },
+  { name: 'Ujjain', lat: 23.1765, lon: 75.7885 },
+];
+
+// Heatmap component using Leaflet.heat
+function HeatmapLayer({ temperatureData, opacity = 0.6 }) {
+  const map = useMap();
+  const heatLayerRef = useRef(null);
+
+  useEffect(() => {
+    if (!map || !temperatureData || temperatureData.length === 0) return;
+
+    // Remove existing heat layer
+    if (heatLayerRef.current) {
+      map.removeLayer(heatLayerRef.current);
+    }
+
+    // Convert temperature data to heatmap format [lat, lon, intensity]
+    const heatData = temperatureData.map(point => {
+      // Normalize temperature to 0-1 scale (assuming 15-50°C range)
+      const minTemp = 15;
+      const maxTemp = 50;
+      const intensity = Math.max(0, Math.min(1, (point.temperature - minTemp) / (maxTemp - minTemp)));
+      return [point.lat, point.lon, intensity];
+    });
+
+    // Create heat layer with custom gradient
+    heatLayerRef.current = L.heatLayer(heatData, {
+      radius: 45,
+      blur: 35,
+      maxZoom: 8,
+      max: 1.0,
+      gradient: {
+        0.0: '#0000ff',  // Blue - Cold (15°C)
+        0.2: '#00ffff',  // Cyan - Cool (20°C)
+        0.4: '#00ff00',  // Green - Mild (25°C)
+        0.5: '#ffff00',  // Yellow - Warm (30°C)
+        0.65: '#ffa500', // Orange - Hot (35°C)
+        0.8: '#ff4500',  // Red-Orange - Very Hot (40°C)
+        1.0: '#ff0000'   // Red - Extreme (45°C+)
+      },
+      minOpacity: opacity
+    }).addTo(map);
+
+    return () => {
+      if (heatLayerRef.current) {
+        map.removeLayer(heatLayerRef.current);
+      }
+    };
+  }, [map, temperatureData, opacity]);
+
+  return null;
+}
+
+function MapView({ citiesData, temperatureData, isLoading }) {
+  const [showHeatmap, setShowHeatmap] = useState(true);
+  const [heatmapOpacity, setHeatmapOpacity] = useState(0.6);
+
   const getMarkerColor = (temperature, aqi) => {
     // Color based on heat and air quality
     if (temperature >= 40 || aqi >= 300) return '#ff0000'; // Red - Extreme
@@ -118,6 +232,11 @@ function MapView({ citiesData, isLoading }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
         
+        {/* Temperature Heatmap Layer */}
+        {showHeatmap && temperatureData && temperatureData.length > 0 && (
+          <HeatmapLayer temperatureData={temperatureData} opacity={heatmapOpacity} />
+        )}
+        
         {citiesData.map((city) => {
           const markerColor = getMarkerColor(city.temperature, city.aqi);
           const customIcon = createCustomIcon(markerColor, city.temperature);
@@ -164,6 +283,41 @@ function MapView({ citiesData, isLoading }) {
         })}
       </MapContainer>
       
+      {/* Heatmap Legend */}
+      {showHeatmap && (
+        <div className="absolute bottom-4 left-4 bg-slate-800/95 backdrop-blur-sm p-4 rounded-lg shadow-lg z-[1000] border border-slate-700">
+          <div className="text-white font-semibold mb-2 flex items-center gap-2">
+            <ThermometerIcon className="w-4 h-4" />
+            Temperature Scale
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-40 rounded" style={{
+              background: 'linear-gradient(to right, #0000ff, #00ffff, #00ff00, #ffff00, #ffa500, #ff4500, #ff0000)'
+            }}></div>
+          </div>
+          <div className="flex justify-between text-xs text-gray-300 mt-1">
+            <span>15°C</span>
+            <span>25°C</span>
+            <span>35°C</span>
+            <span>45°C+</span>
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <label className="text-xs text-gray-300">Opacity:</label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={heatmapOpacity}
+              onChange={(e) => setHeatmapOpacity(parseFloat(e.target.value))}
+              className="w-24 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
+            />
+            <span className="text-xs text-gray-300">{Math.round(heatmapOpacity * 100)}%</span>
+          </div>
+        </div>
+      )}
+      
+      {/* Map Controls */}
       <div className="absolute top-4 right-4 lg:right-[340px] flex flex-col gap-2 z-[1000]">
         <button
           className="bg-slate-800/90 backdrop-blur-sm text-white p-3 rounded-lg hover:bg-slate-700 transition-all duration-200 shadow-lg"
@@ -176,6 +330,16 @@ function MapView({ citiesData, isLoading }) {
           aria-label="Zoom out"
         >
           <MinusIcon className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => setShowHeatmap(!showHeatmap)}
+          className={`backdrop-blur-sm text-white p-3 rounded-lg transition-all duration-200 shadow-lg ${
+            showHeatmap ? 'bg-orange-600/90 hover:bg-orange-700' : 'bg-slate-800/90 hover:bg-slate-700'
+          }`}
+          aria-label="Toggle heatmap"
+          title={showHeatmap ? 'Hide Heatmap' : 'Show Heatmap'}
+        >
+          <ThermometerIcon className="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -226,7 +390,7 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
           {isLoading ? (
             Array(3).fill(0).map((_, i) => <LoadingCard key={i} />)
           ) : (
-            aqiData.slice(0, 5).map((city, index) => {
+            aqiData.slice(0, 5).map((city) => {
               const status = getAQIStatus(city.aqi);
               return (
                 <div 
@@ -305,7 +469,7 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
           {isLoading ? (
             Array(3).fill(0).map((_, i) => <LoadingCard key={i} />)
           ) : (
-            forecastData?.daily?.slice(0, 3).map((day, index) => (
+            forecastData?.daily?.slice(0, 3).map((day) => (
               <div 
                 key={day.day} 
                 className="bg-slate-700/70 backdrop-blur-sm p-4 rounded-lg hover:bg-slate-600/70 transition-all duration-200 cursor-pointer border border-slate-600"
@@ -355,6 +519,7 @@ export function HeatWaveMap() {
   const [weatherData, setWeatherData] = useState([]);
   const [forecastData, setForecastData] = useState(null);
   const [citiesData, setCitiesData] = useState([]);
+  const [temperatureData, setTemperatureData] = useState([]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -400,6 +565,41 @@ export function HeatWaveMap() {
       
       setCitiesData(mapCitiesData);
 
+      // Load temperature data for heatmap from expanded grid
+      console.log('Loading temperature data for heatmap...');
+      const gridCities = INDIA_TEMPERATURE_GRID.map(city => city.name);
+      
+      // Fetch in batches to avoid overwhelming the API
+      const batchSize = 10;
+      const allTemperatureData = [];
+      
+      for (let i = 0; i < gridCities.length; i += batchSize) {
+        const batch = gridCities.slice(i, i + batchSize);
+        const batchResults = await weatherService.getMultipleCities(batch);
+        
+        batchResults.forEach((result, index) => {
+          if (result.data) {
+            const cityInfo = INDIA_TEMPERATURE_GRID.find(c => c.name === batch[index]);
+            if (cityInfo) {
+              allTemperatureData.push({
+                lat: cityInfo.lat,
+                lon: cityInfo.lon,
+                temperature: result.data.temperature,
+                name: cityInfo.name
+              });
+            }
+          }
+        });
+        
+        // Small delay between batches
+        if (i + batchSize < gridCities.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+      
+      console.log(`Loaded ${allTemperatureData.length} temperature data points for heatmap`);
+      setTemperatureData(allTemperatureData);
+
     } catch (error) {
       console.error('Failed to load environmental data:', error);
       
@@ -427,6 +627,15 @@ export function HeatWaveMap() {
         condition: 'Pleasant',
         humidity: 60
       })));
+      
+      // Generate mock temperature data for heatmap
+      const mockTempData = INDIA_TEMPERATURE_GRID.map(city => ({
+        lat: city.lat,
+        lon: city.lon,
+        temperature: 20 + Math.random() * 20, // 20-40°C range
+        name: city.name
+      }));
+      setTemperatureData(mockTempData);
     } finally {
       setIsLoading(false);
     }
@@ -434,6 +643,7 @@ export function HeatWaveMap() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLocation]);
 
   const handleRefresh = () => {
@@ -449,7 +659,11 @@ export function HeatWaveMap() {
         onRefresh={handleRefresh}
       />
       <main className="flex-1 flex flex-col lg:flex-row relative">
-        <MapView citiesData={citiesData} isLoading={isLoading} />
+        <MapView 
+          citiesData={citiesData} 
+          temperatureData={temperatureData}
+          isLoading={isLoading} 
+        />
         <Sidebar 
           aqiData={aqiData}
           weatherData={weatherData}

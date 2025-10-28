@@ -22,7 +22,8 @@ export function StatCards({ weatherData, loading }) {
 
   // Get UV Index level description
   const getUVLevel = (uvIndex) => {
-    if (!uvIndex) return 'Unknown';
+    if (uvIndex === undefined || uvIndex === null) return 'No data';
+    if (uvIndex === 0) return 'Minimal exposure';
     if (uvIndex <= 2) return 'Low risk';
     if (uvIndex <= 5) return 'Moderate risk';
     if (uvIndex <= 7) return 'High risk';
@@ -32,7 +33,7 @@ export function StatCards({ weatherData, loading }) {
 
   // Get humidity level description
   const getHumidityLevel = (humidity) => {
-    if (!humidity) return 'Unknown';
+    if (!humidity && humidity !== 0) return 'No data';
     if (humidity < 30) return 'Very dry';
     if (humidity < 50) return 'Dry';
     if (humidity < 70) return 'Normal humidity level';
@@ -42,7 +43,7 @@ export function StatCards({ weatherData, loading }) {
 
   // Get visibility description
   const getVisibilityLevel = (visibility) => {
-    if (!visibility) return 'Unknown';
+    if (!visibility && visibility !== 0) return 'No data';
     if (visibility >= 10) return 'Excellent visibility';
     if (visibility >= 6) return 'Good visibility conditions';
     if (visibility >= 3) return 'Moderate visibility';
@@ -88,7 +89,9 @@ export function StatCards({ weatherData, loading }) {
           <h3 className="text-sm text-gray-400">UV Index</h3>
           <Sun className="w-5 h-5 text-yellow-400" />
         </div>
-        <p className="text-4xl font-bold mb-1">{weatherData?.uvIndex || '--'}</p>
+        <p className="text-4xl font-bold mb-1">
+          {weatherData?.uvIndex !== undefined && weatherData?.uvIndex !== null ? weatherData.uvIndex : '--'}
+        </p>
         <p className="text-sm text-gray-400">UV</p>
         <p className="text-xs text-gray-500 mt-2">{getUVLevel(weatherData?.uvIndex)}</p>
       </div>
