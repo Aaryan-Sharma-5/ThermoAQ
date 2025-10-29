@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import landingPageImage from "../assets/images/landingPage.png";
 import { WeatherForecastChart } from '../components/charts/ChartComponents';
 import { Header } from "../layout/Header";
@@ -6,6 +7,7 @@ import aqiService from '../services/aqiService';
 import weatherService from '../services/weatherService';
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [weatherData, setWeatherData] = useState(null);
   const [aqiData, setAqiData] = useState(null);
   const [forecastData, setForecastData] = useState(null);
@@ -497,10 +499,11 @@ const HomePage = () => {
               </div>
 
               {/* Enhanced Weather Forecast Widget */}
-              <div className="bg-gradient-to-br from-blue-900/90 via-blue-800/80 to-slate-800/90 rounded-3xl p-8 border border-blue-600/50 backdrop-blur-xl relative overflow-hidden hover:shadow-2xl hover:shadow-blue-900/30 transition-all duration-500 group"
+              <div className="bg-gradient-to-br from-blue-900/90 via-blue-800/80 to-slate-800/90 rounded-3xl p-8 border border-blue-600/50 backdrop-blur-xl relative overflow-hidden hover:shadow-2xl hover:shadow-blue-900/30 transition-all duration-500 group cursor-pointer"
                    style={{
                      boxShadow: '0 0 30px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                    }}
+                   onClick={() => navigate('/weather')}
               >
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
@@ -511,8 +514,19 @@ const HomePage = () => {
                     </div>
                     <h3 className="text-white text-xl font-bold tracking-tight">Weather Forecast</h3>
                   </div>
-                  <div className="text-3xl transform group-hover:scale-110 transition-transform duration-300">
-                    {weatherData?.icon || '☀️'}
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      className="px-3 py-1.5 bg-blue-500/20 text-blue-300 text-xs font-medium rounded-full border border-blue-500/30 hover:bg-blue-500/30 transition-all duration-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/weather');
+                      }}
+                    >
+                      View Dashboard
+                    </button>
+                    <div className="text-3xl transform group-hover:scale-110 transition-transform duration-300">
+                      {weatherData?.icon || '☀️'}
+                    </div>
                   </div>
                 </div>
                 
