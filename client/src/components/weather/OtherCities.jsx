@@ -1,46 +1,63 @@
-import { Cloud, CloudRain, Sun } from 'lucide-react';
 
-export function OtherCities() {
-  const cities = [
-    {
-      name: 'Beijing',
-      condition: 'Cloudy',
-      temp: 8,
-      icon: Cloud,
-    },
-    {
-      name: 'California',
-      condition: 'Sunny',
-      temp: 28,
-      icon: Sun,
-    },
-    {
-      name: 'Dubai',
-      condition: 'Partly Sunny',
-      temp: 35,
-      icon: CloudRain,
-    },
-  ];
+
+export function OtherCities({ multipleCitiesData, loading }) {
+  if (loading) {
+    return (
+      <div className="bg-[#1e2430] rounded-2xl p-6">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-600 rounded mb-4 w-32"></div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-[#252d3d] rounded-xl p-4">
+                <div className="h-4 bg-gray-600 rounded mb-2 w-20"></div>
+                <div className="h-8 bg-gray-600 rounded mb-2 w-12"></div>
+                <div className="h-3 bg-gray-600 rounded w-16"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const cities = multipleCitiesData?.filter(city => city.data) || [];
 
   return (
     <div className="bg-[#1e2430] rounded-2xl p-6">
-      <h3 className="text-lg font-semibold mb-4">Other Cities</h3>
-      <div className="space-y-3">
-        {cities.map((city, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between p-4 bg-[#252d3d] rounded-xl hover:bg-[#2d3548] transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <city.icon className="w-6 h-6 text-gray-400" />
-              <div>
-                <p className="font-medium">{city.name}</p>
-                <p className="text-sm text-gray-400">{city.condition}</p>
+      <h3 className="text-xl font-semibold mb-4">Other Cities</h3>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {cities.map((cityData, i) => {
+          const city = cityData.data;
+          return (
+            <div key={i} className="bg-[#252d3d] rounded-xl p-4 hover:bg-[#2d3548] transition-colors cursor-pointer">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">{cityData.city}</h4>
+                <span className="text-xl">{city.icon}</span>
+              </div>
+              <div className="text-2xl font-bold mb-1">{city.temperature}°C</div>
+              <div className="text-sm text-gray-400">{city.condition}</div>
+              <div className="text-xs text-gray-500 mt-2">
+                Humidity: {city.humidity}%
               </div>
             </div>
-            <p className="text-2xl font-bold">{city.temp}°</p>
-          </div>
-        ))}
+          );
+        })}
+        
+        {/* Show fallback cities if no data */}
+        {cities.length === 0 && !loading && (
+          <>
+            {['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad'].map((cityName, i) => (
+              <div key={i} className="bg-[#252d3d] rounded-xl p-4 opacity-50">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium">{cityName}</h4>
+                  <span className="text-xl">🌡️</span>
+                </div>
+                <div className="text-2xl font-bold mb-1">--°C</div>
+                <div className="text-sm text-gray-400">Loading...</div>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
