@@ -3,10 +3,11 @@ import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
-import HeatWaveMap from "./pages/HeatWaveMap";
 import Dashboard from "./pages/Dashboard";
-import WeatherApp from "./pages/WeatherApp";
+import DistrictAnalytics from "./pages/DistrictAnalytics";
+import HeatWaveMap from "./pages/HeatWaveMap";
 import HomePage from "./pages/HomePage";
+import WeatherApp from "./pages/WeatherApp";
 
 function App() {
   return (
@@ -16,7 +17,8 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/weather" element={<WeatherApp />} />
-             <Route path="/heatwave" element={<HeatWaveMap />} />   
+            <Route path="/heatwave" element={<HeatWaveMap />} />
+            <Route path="/analytics" element={<DistrictAnalytics />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
