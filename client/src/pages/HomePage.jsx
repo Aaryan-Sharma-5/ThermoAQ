@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import landingPageImage from "../assets/images/landingPage.png";
-import { AQICircularChart, AQITrendChart, WeatherForecastChart } from '../components/charts/ChartComponents';
+import { WeatherForecastChart } from '../components/charts/ChartComponents';
 import { Header } from "../layout/Header";
 import aqiService from '../services/aqiService';
 import weatherService from '../services/weatherService';
@@ -96,131 +96,182 @@ const HomePage = () => {
     fetchAllData(locationString);
   };
 
-  // Simple AQI Map Component for debugging
-  const AQIMapModal = () => (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-2xl w-full max-w-6xl h-[90vh] relative overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={() => setShowAQIMap(false)}
-              className="text-white hover:text-gray-300 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </button>
-            <h2 className="text-white text-xl font-bold">AQI Details</h2>
-          </div>
-          <div className="text-white">
-            {aqiData?.location || selectedLocation}
+  // Simple Map Placeholder Component
+  const SimpleMapPlaceholder = ({ aqiData = [], selectedCity, onCitySelect, className = "" }) => {
+    const defaultCities = [
+      { city: 'Mumbai', aqi: 64 },
+      { city: 'Delhi', aqi: 156 },
+      { city: 'Bangalore', aqi: 78 },
+      { city: 'Chennai', aqi: 89 },
+      { city: 'Kolkata', aqi: 124 },
+      { city: 'Hyderabad', aqi: 95 }
+    ];
+
+    const cityData = aqiData.length > 0 ? aqiData : defaultCities;
+
+    const getMapAQIColor = (aqi) => {
+      if (aqi <= 50) return '#10B981'; // Green
+      if (aqi <= 100) return '#F59E0B'; // Yellow
+      if (aqi <= 150) return '#F97316'; // Orange
+      return '#EF4444'; // Red
+    };
+
+    return (
+      <div className={`w-full h-full bg-gray-700 relative ${className}`}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-white text-xl mb-4">India AQI Map</div>
+            <div className="grid grid-cols-3 gap-4 max-w-md">
+              {cityData.map((cityInfo, index) => (
+                <div 
+                  key={index}
+                  className="cursor-pointer transform hover:scale-110 transition-transform duration-200"
+                  onClick={() => onCitySelect && onCitySelect(cityInfo.city)}
+                >
+                  <div 
+                    className="w-16 h-16 rounded-full flex flex-col items-center justify-center text-white font-bold border-2 border-white shadow-lg"
+                    style={{ backgroundColor: getMapAQIColor(cityInfo.aqi) }}
+                  >
+                    <div className="text-xs">{cityInfo.aqi}</div>
+                    <div className="text-xs">{cityInfo.city.slice(0, 3)}</div>
+                  </div>
+                  <div className="text-white text-xs text-center mt-1">{cityInfo.city}</div>
+                </div>
+              ))}
+            </div>
+            <div className="text-gray-400 text-sm mt-4">Click on any city to view details</div>
           </div>
         </div>
+      </div>
+    );
+  };
 
-        <div className="p-6">
-          {/* Current AQI Display */}
-          <div className="text-center mb-8">
-            <div 
-              className="text-6xl font-bold mb-4"
-              style={{ color: aqiData?.color || '#F59E0B' }}
-            >
-              {aqiData?.aqi || 64}
+  // AQI Modal Component
+  const AQIMapModal = () => {
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="bg-gray-800 rounded-2xl w-full max-w-6xl h-[90vh] relative overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-700">
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => setShowAQIMap(false)}
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+              <h2 className="text-white text-xl font-bold">AQI Map</h2>
             </div>
-            <div className="text-white text-xl mb-2">
-              {aqiData?.level || 'Moderate'}
-            </div>
-            <div className="text-gray-400">
-              Air Quality Index for {aqiData?.location || selectedLocation}
+            <div className="text-white text-sm">
+              {aqiData?.location || selectedLocation}
             </div>
           </div>
 
-          {/* AQI Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gray-700 rounded-xl p-6">
-              <h3 className="text-white text-lg font-semibold mb-4">Health Information</h3>
-              <div className="text-gray-300">
-                <p className="mb-2">
-                  {aqiData?.description || 'Air quality is acceptable for most people.'}
-                </p>
-                {aqiData?.recommendations && (
-                  <div className="mt-4">
-                    <h4 className="text-white font-medium mb-2">Recommendations:</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                      {aqiData.recommendations.map((rec, index) => (
-                        <li key={index} className="text-sm">{rec}</li>
+          <div className="flex h-[calc(100%-80px)]">
+            {/* Left Sidebar */}
+            <div className="w-80 bg-gray-900 p-6 overflow-y-auto">
+              <div className="mb-6">
+                <h3 className="text-white text-lg font-semibold mb-4">Air Quality Map</h3>
+                <p className="text-gray-400 text-sm mb-4">{aqiData?.location || selectedLocation}</p>
+                
+                {/* AQI Value Display */}
+                <div className="mb-6">
+                  <div 
+                    className="text-5xl font-bold mb-2"
+                    style={{ color: aqiData?.color || '#F59E0B' }}
+                  >
+                    {aqiData?.aqi || 64}
+                  </div>
+                  <div 
+                    className="text-sm mb-4"
+                    style={{ color: aqiData?.color || '#F59E0B' }}
+                  >
+                    {aqiData?.level || 'Moderate'}
+                  </div>
+                  <div className="text-gray-400 text-xs">{aqiData?.description || 'AQI Level'}</div>
+                </div>
+
+                {/* Health Icon */}
+                <div className="mb-6 flex justify-center">
+                  <div 
+                    className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
+                    style={{ backgroundColor: aqiData?.color || '#F59E0B' }}
+                  >
+                    {(aqiData?.aqi || 64) > 100 ? '😷' : (aqiData?.aqi || 64) > 50 ? '😐' : '😊'}
+                  </div>
+                </div>
+
+                {/* Pollutant Display */}
+                <div className="mb-6">
+                  <h4 className="text-white text-sm font-semibold mb-3">Pollutant Breakdown</h4>
+                  {aqiData?.pollutants ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-300 text-sm">PM2.5</span>
+                        <span className="text-white text-sm">{aqiData.pollutants.pm25} μg/m³</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-300 text-sm">PM10</span>
+                        <span className="text-white text-sm">{aqiData.pollutants.pm10} μg/m³</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-300 text-sm">O₃</span>
+                        <span className="text-white text-sm">{aqiData.pollutants.o3} μg/m³</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-gray-400 text-sm">Loading pollutant data...</div>
+                  )}
+                </div>
+
+                {/* History Display */}
+                {aqiHistory.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-white text-sm font-semibold mb-3">Recent History</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {aqiHistory.slice(0, 6).map((item, index) => (
+                        <div key={index} className="text-center bg-gray-800 rounded p-2">
+                          <div className="text-xs text-gray-400">
+                            {new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                          </div>
+                          <div 
+                            className="text-lg font-bold"
+                            style={{ color: item.color || '#F59E0B' }}
+                          >
+                            {item.aqi}
+                          </div>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="bg-gray-700 rounded-xl p-6">
-              <h3 className="text-white text-lg font-semibold mb-4">Pollutant Levels</h3>
-              {aqiData?.pollutants ? (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">PM2.5</span>
-                    <span className="text-white font-medium">{aqiData.pollutants.pm25} μg/m³</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">PM10</span>
-                    <span className="text-white font-medium">{aqiData.pollutants.pm10} μg/m³</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">O₃</span>
-                    <span className="text-white font-medium">{aqiData.pollutants.o3} μg/m³</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-300">NO₂</span>
-                    <span className="text-white font-medium">{aqiData.pollutants.no2} μg/m³</span>
-                  </div>
+            {/* Map Area */}
+            <div className="flex-1 relative bg-gray-700">
+              <SimpleMapPlaceholder 
+                aqiData={multipleCitiesAQI}
+                selectedCity={selectedLocation.split(',')[0]}
+                onCitySelect={handleCitySelectFromMap}
+                className="w-full h-full"
+              />
+              
+              {/* Map overlay indicators */}
+              <div className="absolute bottom-4 left-4 bg-black/60 rounded-lg p-2">
+                <div className="flex items-center space-x-2 text-white text-xs">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span>We Are Here</span>
                 </div>
-              ) : (
-                <div className="text-gray-400">Pollutant data not available</div>
-              )}
-            </div>
-          </div>
-
-          {/* Historical Data */}
-          {aqiHistory.length > 0 && (
-            <div className="mt-6 bg-gray-700 rounded-xl p-6">
-              <h3 className="text-white text-lg font-semibold mb-4">Recent AQI History</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                {aqiHistory.slice(0, 7).map((item, index) => (
-                  <div key={index} className="text-center">
-                    <div className="text-gray-400 text-xs mb-1">
-                      {new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' })}
-                    </div>
-                    <div 
-                      className="text-2xl font-bold mb-1"
-                      style={{ color: item.color || '#F59E0B' }}
-                    >
-                      {item.aqi}
-                    </div>
-                    <div className="text-gray-300 text-xs">
-                      {item.level || 'Moderate'}
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
-          )}
-
-          {/* Close Button */}
-          <div className="text-center mt-8">
-            <button
-              onClick={() => setShowAQIMap(false)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Close
-            </button>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
@@ -317,113 +368,135 @@ const HomePage = () => {
                   boxShadow: `0 0 30px ${aqiData?.color}20, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
                 }}
               >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-blue-500/20 rounded-xl">
-                      <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* Header Section with improved spacing */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 bg-blue-500/20 rounded-xl">
+                      <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                       </svg>
                     </div>
                     <h3 className="text-white text-xl font-bold tracking-tight">Air Quality Index</h3>
                   </div>
-                  <div className="flex items-center space-x-2 bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">
+                  <div className="flex items-center space-x-2 bg-red-500/10 px-4 py-2 rounded-full border border-red-500/20">
                     <div 
-                      className="w-2 h-2 rounded-full animate-pulse" 
+                      className="w-2.5 h-2.5 rounded-full animate-pulse" 
                       style={{ backgroundColor: aqiData?.color || '#EF4444' }}
                     />
                     <span className="text-red-400 text-sm font-medium">Live Data</span>
                   </div>
                 </div>
                 
-                <div className="relative bg-cover bg-center rounded-xl overflow-hidden mb-6" 
+                {/* Main AQI Display Section */}
+                <div className="relative bg-cover bg-center rounded-2xl overflow-hidden mb-8" 
                      style={{
                        backgroundImage: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url("https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=600&h=300&fit=crop")',
-                       height: '200px'
+                       height: '240px'
                      }}>
                   
-                  {/* Real AQI Number and location */}
-                  <div className="absolute left-6 top-6">
+                  {/* AQI Number and Status*/}
+                  <div className="absolute left-8 top-8">
                     <div 
-                      className="text-6xl font-bold mb-2"
+                      className="text-7xl font-bold leading-none"
                       style={{ color: aqiData?.color || '#F59E0B' }}
                     >
-                      {aqiData?.aqi || 64}
+                      {aqiData?.aqi || 79}
                     </div>
+                  </div>
+
+                  {/* Status and Location */}
+                  <div className="absolute left-8 top-32">
                     <div 
-                      className="text-sm"
+                      className="text-xl font-semibold mb-3"
                       style={{ color: aqiData?.color || '#F59E0B' }}
                     >
                       {aqiData?.level || 'Moderate'}
                     </div>
-                    <div className="text-xs text-gray-300 mt-1">
+                    <div className="text-sm text-gray-300 bg-black/40 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10">
                       {aqiData?.location || selectedLocation}
                     </div>
                   </div>
 
-                  {/* Real Circular Progress Chart */}
-                  <div className="absolute left-6 bottom-6">
-                    <AQICircularChart 
-                      aqi={aqiData?.aqi || 64} 
-                      level={aqiData?.level || 'Moderate'}
-                      className="w-20 h-20"
-                    />
-                  </div>
-
-                  {/* Real Pollutant Levels - Right side */}
+                  {/* Enhanced Pollutant Levels */}
                   {aqiData?.pollutants && (
-                    <div className="absolute right-6 top-6 space-y-2">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-gray-300 text-sm">PM2.5</span>
-                        <div className="w-12 h-1.5 bg-gray-700 rounded-full">
-                          <div 
-                            className="h-1.5 rounded-full transition-all duration-300" 
-                            style={{
-                              width: `${Math.min((aqiData.pollutants.pm25 / 100) * 100, 100)}%`,
-                              backgroundColor: aqiData.pollutants.pm25 > 50 ? '#EF4444' : aqiData.pollutants.pm25 > 25 ? '#F59E0B' : '#10B981'
-                            }}
-                          ></div>
+                    <div className="absolute right-8 top-8 space-y-4">
+                      <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                        <h4 className="text-white text-sm font-semibold mb-3">Pollutant Levels</h4>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-300 text-sm font-medium w-12">PM2.5</span>
+                            <div className="w-16 h-2 bg-gray-700 rounded-full mx-3">
+                              <div 
+                                className="h-2 rounded-full transition-all duration-500" 
+                                style={{
+                                  width: `${Math.min((aqiData.pollutants.pm25 / 100) * 100, 100)}%`,
+                                  backgroundColor: aqiData.pollutants.pm25 > 50 ? '#EF4444' : aqiData.pollutants.pm25 > 25 ? '#F59E0B' : '#10B981'
+                                }}
+                              ></div>
+                            </div>
+                            <span className="text-white text-sm font-bold w-8 text-right">{aqiData.pollutants.pm25}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-300 text-sm font-medium w-12">PM10</span>
+                            <div className="w-16 h-2 bg-gray-700 rounded-full mx-3">
+                              <div 
+                                className="h-2 rounded-full transition-all duration-500" 
+                                style={{
+                                  width: `${Math.min((aqiData.pollutants.pm10 / 150) * 100, 100)}%`,
+                                  backgroundColor: aqiData.pollutants.pm10 > 75 ? '#EF4444' : aqiData.pollutants.pm10 > 50 ? '#F59E0B' : '#10B981'
+                                }}
+                              ></div>
+                            </div>
+                            <span className="text-white text-sm font-bold w-8 text-right">{aqiData.pollutants.pm10}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-300 text-sm font-medium w-12">O₃</span>
+                            <div className="w-16 h-2 bg-gray-700 rounded-full mx-3">
+                              <div 
+                                className="h-2 rounded-full transition-all duration-500" 
+                                style={{
+                                  width: `${Math.min((aqiData.pollutants.o3 / 100) * 100, 100)}%`,
+                                  backgroundColor: aqiData.pollutants.o3 > 60 ? '#EF4444' : aqiData.pollutants.o3 > 40 ? '#F59E0B' : '#10B981'
+                                }}
+                              ></div>
+                            </div>
+                            <span className="text-white text-sm font-bold w-8 text-right">{aqiData.pollutants.o3}</span>
+                          </div>
                         </div>
-                        <span className="text-white text-xs w-6">{aqiData.pollutants.pm25}</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <span className="text-gray-300 text-sm">PM10</span>
-                        <div className="w-12 h-1.5 bg-gray-700 rounded-full">
-                          <div 
-                            className="h-1.5 rounded-full transition-all duration-300" 
-                            style={{
-                              width: `${Math.min((aqiData.pollutants.pm10 / 150) * 100, 100)}%`,
-                              backgroundColor: aqiData.pollutants.pm10 > 75 ? '#EF4444' : aqiData.pollutants.pm10 > 50 ? '#F59E0B' : '#10B981'
-                            }}
-                          ></div>
-                        </div>
-                        <span className="text-white text-xs w-6">{aqiData.pollutants.pm10}</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <span className="text-gray-300 text-sm">O₃</span>
-                        <div className="w-12 h-1.5 bg-gray-700 rounded-full">
-                          <div 
-                            className="h-1.5 rounded-full transition-all duration-300" 
-                            style={{
-                              width: `${Math.min((aqiData.pollutants.o3 / 100) * 100, 100)}%`,
-                              backgroundColor: aqiData.pollutants.o3 > 60 ? '#EF4444' : aqiData.pollutants.o3 > 40 ? '#F59E0B' : '#10B981'
-                            }}
-                          ></div>
-                        </div>
-                        <span className="text-white text-xs w-6">{aqiData.pollutants.o3}</span>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Real AQI Trend Chart */}
+                {/* Enhanced AQI Trend Chart with better spacing */}
                 {aqiHistory.length > 0 && (
-                  <div className="h-20 bg-slate-700/50 rounded-xl p-2">
-                    <AQITrendChart data={aqiHistory} className="h-full" />
+                  <div className="bg-slate-700/50 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-white text-sm font-semibold">7-Day Trend</h4>
+                      <div className="text-gray-400 text-xs">Latest Week</div>
+                    </div>
+                    <div className="h-16 flex items-end space-x-2">
+                      {aqiHistory.slice(0, 7).map((item, index) => (
+                        <div className="flex-1 flex flex-col items-center space-y-1" key={index}>
+                          <div 
+                            className="w-full rounded-t transition-all duration-500 hover:opacity-80"
+                            style={{ 
+                              height: `${Math.min((item.aqi / 200) * 100, 100)}%`,
+                              backgroundColor: item.color || '#3B82F6',
+                              minHeight: '8px'
+                            }}
+                          />
+                          <div className="text-gray-400 text-xs">
+                            {new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Enhanced Weather Forecast Widget (same size as AQI) */}
+              {/* Enhanced Weather Forecast Widget */}
               <div className="bg-gradient-to-br from-blue-900/90 via-blue-800/80 to-slate-800/90 rounded-3xl p-8 border border-blue-600/50 backdrop-blur-xl relative overflow-hidden hover:shadow-2xl hover:shadow-blue-900/30 transition-all duration-500 group"
                    style={{
                      boxShadow: '0 0 30px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
