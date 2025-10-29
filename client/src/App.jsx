@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import DistrictAnalytics from "./pages/DistrictAnalytics";
+import HealthAdvisory from "./pages/HealthAdvisory";
 import HeatWaveMap from "./pages/HeatWaveMap";
 import HomePage from "./pages/HomePage";
 import WeatherApp from "./pages/WeatherApp";
@@ -19,6 +20,7 @@ function App() {
             <Route path="/weather" element={<WeatherApp />} />
             <Route path="/heatwave" element={<HeatWaveMap />} />
             <Route path="/analytics" element={<DistrictAnalytics />} />
+            <Route path="/health-advisory" element={<HealthAdvisory />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />

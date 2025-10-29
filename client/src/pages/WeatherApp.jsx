@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
+import { PageHeader } from '../components/PageHeader'
 import { GlobalWeatherMap } from '../components/weather/GlobalWeatherMap'
-import { Header } from '../components/weather/Header'
 import { HourlyForecast } from '../components/weather/HourlyForecast'
 import { OtherCities } from '../components/weather/OtherCities'
 import { RainCharts } from '../components/weather/RainCharts'
@@ -75,12 +75,18 @@ export function WeatherApp() {
     )
   }
 
+  // Function to handle refresh
+  const handleRefresh = () => {
+    fetchWeatherData(selectedLocation)
+  }
+
   return (
     <div className="w-full min-h-screen bg-black text-white">
-      <Header 
-        onLocationChange={handleLocationChange} 
-        selectedLocation={selectedLocation}
-        weatherData={weatherData}
+      <PageHeader 
+        title="Weather Dashboard"
+        selectedLocation={`${selectedLocation}, India`}
+        onLocationChange={(location) => handleLocationChange(location.split(',')[0])}
+        onRefresh={handleRefresh}
       />
       <main className="max-w-[1400px] mx-auto p-4 md:p-6 space-y-6">
         {/* Top Section */}

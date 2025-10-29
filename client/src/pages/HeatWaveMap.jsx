@@ -1,11 +1,11 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { AlertTriangleIcon, ChevronDownIcon, CloudIcon, LoaderIcon, MapPinIcon, MinusIcon, PlusIcon, RefreshCwIcon, ThermometerIcon, UserIcon } from 'lucide-react';
+import { AlertTriangleIcon, CloudIcon, LoaderIcon, MinusIcon, PlusIcon, ThermometerIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
-import { useNavigate } from 'react-router-dom';
-import weatherService from '../services/weatherService';
+import { PageHeader } from '../components/PageHeader';
 import aqiService from '../services/aqiService';
+import weatherService from '../services/weatherService';
 
 // Add CSS for custom markers
 const mapStyles = `
@@ -59,90 +59,6 @@ const MAJOR_CITIES = [
   { name: 'Jaipur', position: [26.9124, 75.7873] },
   { name: 'Surat', position: [21.1702, 72.8311] }
 ];
-
-function Header({ selectedLocation, setSelectedLocation, isLoading, onRefresh }) {
-  const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
-  
-  const locations = [
-    'Mumbai, Maharashtra',
-    'Delhi, Delhi',
-    'Kolkata, West Bengal',
-    'Bangalore, Karnataka',
-    'Chennai, Tamil Nadu',
-    'Hyderabad, Telangana',
-    'Pune, Maharashtra',
-    'Ahmedabad, Gujarat',
-    'Jaipur, Rajasthan',
-    'Surat, Gujarat'
-  ];
-
-  return (
-    <header className="bg-gradient-to-r from-slate-900 to-slate-800 text-white px-4 md:px-6 py-4 shadow-lg border-b border-slate-700" role="navigation">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/')}
-            className="text-lg font-bold hover:bg-slate-800 px-4 py-2 rounded-lg transition-all duration-200 transform hover:scale-105"
-          >
-            ← ThermoAQ Home
-          </button>
-          <h1 className="text-xl md:text-2xl font-bold text-orange-400">Heat Wave Monitor</h1>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          {/* Refresh Button */}
-          <button
-            onClick={onRefresh}
-            disabled={isLoading}
-            className="bg-slate-700 text-white p-2 rounded-lg hover:bg-slate-600 disabled:opacity-50 transition-all duration-200"
-            aria-label="Refresh data"
-          >
-            <RefreshCwIcon className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-          
-          {/* Location Selector */}
-          <div className="relative">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="bg-slate-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-600 transition-all duration-200 min-w-[200px] md:min-w-[240px]"
-              aria-label="Select location"
-              aria-expanded={isOpen}
-            >
-              <MapPinIcon className="w-4 h-4 text-orange-400" />
-              <span className="truncate">{selectedLocation}</span>
-              <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-            
-            {isOpen && (
-              <div className="absolute top-full right-0 mt-2 bg-slate-800 rounded-lg shadow-xl overflow-hidden z-50 min-w-[240px] border border-slate-600">
-                {locations.map((location) => (
-                  <button
-                    key={location}
-                    onClick={() => {
-                      setSelectedLocation(location);
-                      setIsOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-3 hover:bg-slate-700 transition-colors text-white border-b border-slate-700 last:border-b-0"
-                  >
-                    {location}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          
-          <button
-            className="bg-slate-700 p-2 rounded-lg hover:bg-slate-600 transition-all duration-200"
-            aria-label="User profile"
-          >
-            <UserIcon className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function MapView({ citiesData, isLoading }) {
   const getMarkerColor = (temperature, aqi) => {
@@ -526,10 +442,10 @@ export function HeatWaveMap() {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-      <Header 
+      <PageHeader 
+        title="Heat Wave Monitor"
         selectedLocation={selectedLocation}
-        setSelectedLocation={setSelectedLocation}
-        isLoading={isLoading}
+        onLocationChange={setSelectedLocation}
         onRefresh={handleRefresh}
       />
       <main className="flex-1 flex flex-col lg:flex-row relative">
