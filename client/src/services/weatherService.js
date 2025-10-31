@@ -344,42 +344,26 @@ class WeatherService {
     }
 
     try {
-      // Get coordinates for the city
-      const coords = await this.geocodeCity(city);
-      
-      // Fetch air quality from Open-Meteo
-      const url = `${OPEN_METEO_BASE}/air-quality?latitude=${coords.lat}&longitude=${coords.lon}&current=us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone&timezone=auto`;
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`Open-Meteo AQI error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const current = data.current;
-      
-      const aqiData = {
-        aqi: current.us_aqi || 50,
-        level: this.getAQILevel(current.us_aqi || 50),
-        pm25: current.pm2_5 || 0,
-        pm10: current.pm10 || 0,
-        co: current.carbon_monoxide || 0,
-        no2: current.nitrogen_dioxide || 0,
-        so2: current.sulphur_dioxide || 0,
-        o3: current.ozone || 0
-      };
+      // Open-Meteo doesn't have air quality endpoint, use aqiService directly
+      const aqiService = (await import('./aqiService.js')).default;
+      const aqiData = await aqiService.getAirQuality(city);
       
       this.setCacheData(cacheKey, aqiData);
       return aqiData;
     } catch (error) {
       console.error('Failed to fetch air quality:', error);
       
-      // Use the AQI service for realistic data
-      const { getRealisticAQIData } = await import('./aqiService.js');
-      const aqiData = await getRealisticAQIData(city);
-      
-      this.setCacheData(cacheKey, aqiData);
-      return aqiData;
+      // Return fallback data
+      return {
+        aqi: 50,
+        level: 'Good',
+        pm25: 12,
+        pm10: 20,
+        co: 0.4,
+        no2: 15,
+        so2: 5,
+        o3: 40
+      };
     }
   }
 

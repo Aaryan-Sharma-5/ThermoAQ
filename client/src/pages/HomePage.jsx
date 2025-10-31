@@ -121,7 +121,7 @@ const HomePage = () => {
   };
 
   // Simple Map Placeholder Component
-  const SimpleMapPlaceholder = ({ aqiData = [], selectedCity, onCitySelect, className = "" }) => {
+  const SimpleMapPlaceholder = ({ aqiData = [], onCitySelect, className = "" }) => {
     const defaultCities = [
       { city: 'Mumbai', aqi: 64 },
       { city: 'Delhi', aqi: 156 },
@@ -534,7 +534,7 @@ const HomePage = () => {
                    style={{
                      boxShadow: '0 0 30px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                    }}
-                   onClick={() => navigate('/weather')}
+                   onClick={() => navigate('/dashboard')}
               >
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
@@ -550,7 +550,7 @@ const HomePage = () => {
                       className="px-3 py-1.5 bg-blue-500/20 text-blue-300 text-xs font-medium rounded-full border border-blue-500/30 hover:bg-blue-500/40 hover:border-blue-400/50 hover:text-blue-200 hover:scale-105 transition-all duration-300 transform"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate('/weather');
+                        navigate('/dashboard');
                       }}
                     >
                       View Dashboard

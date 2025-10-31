@@ -23,6 +23,38 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters']
+  },
+  location: {
+    city: {
+      type: String,
+      default: 'Mumbai'
+    },
+    state: {
+      type: String,
+      default: 'Maharashtra'
+    },
+    latitude: {
+      type: Number,
+      default: null
+    },
+    longitude: {
+      type: Number,
+      default: null
+    },
+    lastUpdated: {
+      type: Date,
+      default: Date.now
+    }
+  },
+  preferences: {
+    autoDetectLocation: {
+      type: Boolean,
+      default: true
+    },
+    defaultLocation: {
+      type: String,
+      default: 'Mumbai, Maharashtra'
+    }
   }
 }, {
   timestamps: true

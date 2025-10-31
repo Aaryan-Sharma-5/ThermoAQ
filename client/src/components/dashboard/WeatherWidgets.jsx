@@ -65,7 +65,7 @@ export const WeatherCard = ({ data }) => {
   );
 };
 
-export const MetricCard = ({ title, value, unit, icon, color = 'gray' }) => {
+export const MetricCard = ({ title, value, unit, icon: Icon, color = 'gray' }) => {
   const colorClasses = {
     gray: 'bg-gray-800',
     blue: 'bg-blue-600',
@@ -73,21 +73,16 @@ export const MetricCard = ({ title, value, unit, icon, color = 'gray' }) => {
     green: 'bg-green-600'
   };
 
-  // Check if icon is a component or string
-  const IconComponent = typeof icon === 'string' ? getIconComponent(icon) : icon;
-
   return (
-    <div className={`col-span-2 ${colorClasses[color]} rounded-2xl p-4`}>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-white">{title}</h3>
-        {IconComponent && typeof IconComponent === 'function' ? (
-          <IconComponent className="w-5 h-5 text-white/80" />
-        ) : (
-          <span className="text-xl">{icon}</span>
-        )}
+    <div className={`col-span-3 p-6 ${colorClasses[color]} rounded-2xl`}>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-400">{title}</p>
+        {Icon && <Icon className="w-6 h-6 text-gray-500" />}
       </div>
-      <div className="mb-1 text-2xl font-light text-white">{value}</div>
-      <p className="text-xs text-gray-400">{unit}</p>
+      <p className="text-3xl font-bold text-white">
+        {value || '--'}
+        <span className="ml-1 text-lg text-gray-400">{unit}</span>
+      </p>
     </div>
   );
 };

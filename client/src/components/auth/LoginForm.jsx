@@ -68,6 +68,7 @@ const LoginForm = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  autoComplete="email"
                   className="w-full pl-10 pr-4 py-3 bg-gray-700 border-0 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Email"
                   required
@@ -83,6 +84,7 @@ const LoginForm = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  autoComplete="current-password"
                   className="w-full pl-10 pr-10 py-3 bg-gray-700 border-0 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Password"
                   required

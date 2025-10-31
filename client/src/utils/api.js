@@ -66,6 +66,30 @@ export const authAPI = {
     localStorage.removeItem('user');
     return response.data;
   },
+  
+  // Get user profile
+  getUserProfile: async () => {
+    const response = await api.get('/user/profile');
+    return response.data;
+  },
+  
+  // Get user location
+  getUserLocation: async () => {
+    const response = await api.get('/user/location');
+    return response.data;
+  },
+  
+  // Update user location
+  updateUserLocation: async (locationData) => {
+    const response = await api.post('/user/location', locationData);
+    return response.data;
+  },
+  
+  // Update user preferences
+  updateUserPreferences: async (preferences) => {
+    const response = await api.post('/user/preferences', preferences);
+    return response.data;
+  },
 };
 
 export default api;

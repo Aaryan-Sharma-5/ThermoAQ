@@ -98,6 +98,30 @@ export const Header = ({ onLocationChange }) => {
             >
               Dashboard
             </button>
+            <button
+              onClick={() => {
+                if (user) {
+                  navigate("/advanced");
+                } else {
+                  navigate("/login");
+                }
+              }}
+              className="relative font-medium text-white transition-colors hover:text-green-400"
+            >
+              Advanced
+              {!user && (
+                <span className="absolute -top-1 -right-6 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="font-medium text-white transition-colors hover:text-blue-400"
+            >
+              Dashboard
+            </button>
           </nav>
         </div>
 

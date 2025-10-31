@@ -141,6 +141,7 @@ const SignupForm = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-10 py-3 bg-gray-700 border-0 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Password"
                   required
@@ -163,6 +164,7 @@ const SignupForm = () => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-10 py-3 bg-gray-700 border-0 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Confirm Password"
                   required
