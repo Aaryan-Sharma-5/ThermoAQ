@@ -1,7 +1,7 @@
 import { AlertTriangleIcon, CloudIcon, DropletIcon, GlassWaterIcon, SunIcon, SunMediumIcon, WindIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import heatRiskGlobe from '../assets/images/Heat_Risk_Globe.png'
-import { PageHeader } from '../components/PageHeader'
+import { Header } from '../layout/Header'
 import aqiService from '../services/aqiService'
 import weatherService from '../services/weatherService'
 
@@ -55,23 +55,35 @@ export function HealthAdvisory() {
 
   // Calculate heat index based on temperature and humidity
   const calculateHeatIndex = (temp, humidity) => {
-    if (!temp || !humidity) return temp || 30
+    // If no data available, return a safe default
+    if (!temp) return 25
+    if (!humidity) return temp
     
-    // Simplified heat index calculation
     const T = temp
     const H = humidity
     
-    if (T >= 27) {
-      const HI = -8.78469475556 + 
-                 1.61139411 * T + 
-                 2.33854883889 * H + 
-                 -0.14611605 * T * H + 
-                 -0.012308094 * T * T + 
-                 -0.0164248277778 * H * H
-      return Math.round(HI)
+    // Heat index only applies when temperature is >= 27°C (80°F)
+    // For lower temperatures, just return the actual temperature
+    if (T < 27) {
+      return Math.round(T)
     }
     
-    return temp
+    // Use the complete heat index formula for high temperatures
+    // This is the Rothfusz regression formula
+    const HI = -8.78469475556 + 
+               1.61139411 * T + 
+               2.33854883889 * H + 
+               -0.14611605 * T * H + 
+               -0.012308094 * T * T + 
+               -0.0164248277778 * H * H + 
+               0.00022475541 * T * T * H + 
+               -0.00000687097 * T * H * H + 
+               0.0000000848106 * T * T * H * H
+    
+    // Ensure result is reasonable (shouldn't be less than actual temp)
+    const result = Math.max(Math.round(HI), Math.round(T))
+    
+    return result
   }
 
   // Generate dynamic chart data based on forecast
@@ -97,7 +109,6 @@ export function HealthAdvisory() {
   const generateAdvisories = () => {
     const advisories = []
     const currentTemp = weatherData?.temperature || 25
-    const currentHumidity = weatherData?.humidity || 65
     const currentAQI = aqiData?.aqi || 50
     const uvIndex = weatherData?.uvIndex || 5
     
@@ -252,16 +263,11 @@ export function HealthAdvisory() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white relative overflow-hidden">
-        <PageHeader 
-          title="Heat Risk Advisory" 
-          selectedLocation={selectedLocation}
-          onLocationChange={handleLocationChange}
-          onRefresh={handleRefresh}
-        />
+      <div className="relative min-h-screen overflow-hidden text-white bg-black">
+        <Header onLocationChange={handleLocationChange} />
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+            <div className="w-12 h-12 mx-auto mb-4 border-b-2 border-blue-400 rounded-full animate-spin"></div>
             <p className="text-lg text-gray-400">Loading health advisory data...</p>
           </div>
         </div>
@@ -271,19 +277,14 @@ export function HealthAdvisory() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white relative overflow-hidden">
-        <PageHeader 
-          title="Heat Risk Advisory" 
-          selectedLocation={selectedLocation}
-          onLocationChange={handleLocationChange}
-          onRefresh={handleRefresh}
-        />
+      <div className="relative min-h-screen overflow-hidden text-white bg-black">
+        <Header onLocationChange={handleLocationChange} />
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="text-center">
-            <div className="text-red-400 text-lg mb-4">{error}</div>
+            <div className="mb-4 text-lg text-red-400">{error}</div>
             <button 
               onClick={handleRefresh}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              className="px-6 py-3 transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
             >
               Retry
             </button>
@@ -294,18 +295,13 @@ export function HealthAdvisory() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden text-white bg-black">
       {/* Header */}
-      <PageHeader 
-        title="Heat Risk Advisory" 
-        selectedLocation={selectedLocation}
-        onLocationChange={handleLocationChange}
-        onRefresh={handleRefresh}
-      />
+      <Header onLocationChange={handleLocationChange} />
 
       {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 -z-10"
+        className="absolute inset-0 bg-center bg-no-repeat bg-cover opacity-30 -z-10"
         style={{
           backgroundImage: `url(${heatRiskGlobe})`,
         }}
@@ -315,25 +311,25 @@ export function HealthAdvisory() {
 
       {/* Content */}
       <div className="relative z-10">
-        <main className="max-w-7xl mx-auto px-6 py-8">
+        <main className="px-6 py-8 mx-auto max-w-7xl">
           {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-3">
             {/* Heat Index Card */}
             <div className="lg:col-span-2">
-              <div className="bg-gradient-to-br from-red-900/60 to-red-800/40 rounded-2xl p-6 backdrop-blur-sm border border-red-800/30 h-full">
+              <div className="h-full p-6 border bg-gradient-to-br from-red-900/60 to-red-800/40 rounded-2xl backdrop-blur-sm border-red-800/30">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold text-white">Heat Index</h2>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-green-400 text-sm font-medium">Live</span>
+                    <span className="text-sm font-medium text-green-400">Live</span>
                   </div>
                 </div>
 
                 <div className="mb-6">
-                  <div className="text-7xl font-bold text-yellow-400 mb-2">
+                  <div className="mb-2 font-bold text-yellow-400 text-7xl">
                     {heatIndex}°C
                   </div>
-                  <div className="text-white text-lg mb-1">Feels Like</div>
+                  <div className="mb-1 text-lg text-white">Feels Like</div>
                   <div className={`font-medium ${riskLevel.color}`}>
                     {riskLevel.level}
                   </div>
@@ -342,8 +338,8 @@ export function HealthAdvisory() {
                 <div className={`${riskLevel.bgColor} rounded-xl p-4 mb-6 flex items-start gap-3`}>
                   <AlertTriangleIcon className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
                   <div>
-                    <div className="text-white font-semibold mb-1">{riskLevel.level}</div>
-                    <div className="text-white text-sm">
+                    <div className="mb-1 font-semibold text-white">{riskLevel.level}</div>
+                    <div className="text-sm text-white">
                       {riskLevel.level === 'Extreme Risk' ? 'Stay indoors. Avoid all outdoor activities.' :
                        riskLevel.level === 'High Risk' ? 'Limit outdoor exposure. Take frequent breaks.' :
                        riskLevel.level === 'Moderate Risk' ? 'Take precautions when outdoors.' :
@@ -352,9 +348,9 @@ export function HealthAdvisory() {
                   </div>
                 </div>
 
-                <div className="bg-black/20 rounded-xl p-4 relative">
+                <div className="relative p-4 bg-black/20 rounded-xl">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-white font-medium">Humidity vs Temperature</h3>
+                    <h3 className="font-medium text-white">Humidity vs Temperature</h3>
                   </div>
                   <div className="relative h-32">
                     <svg
@@ -391,21 +387,21 @@ export function HealthAdvisory() {
                           cy={100 - d.humidity}
                           r="4"
                           fill="#f97316"
-                          className="hover:r-6 transition-all cursor-pointer"
+                          className="transition-all cursor-pointer hover:r-6"
                         />
                       ))}
                     </svg>
-                    <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-400 mt-2">
+                    <div className="absolute bottom-0 left-0 right-0 flex justify-between mt-2 text-xs text-gray-400">
                       <span>30</span>
                       <span>35</span>
                       <span>40</span>
                       <span>45</span>
                     </div>
                   </div>
-                  <div className="text-center text-xs text-gray-400 mt-3">
+                  <div className="mt-3 text-xs text-center text-gray-400">
                     Temperature (°C)
                   </div>
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-gray-400 whitespace-nowrap origin-center">
+                  <div className="absolute left-0 text-xs text-gray-400 origin-center -rotate-90 -translate-y-1/2 top-1/2 whitespace-nowrap">
                     Humidity (%)
                   </div>
                 </div>
@@ -414,25 +410,25 @@ export function HealthAdvisory() {
 
             {/* Weather Snapshot Card */}
             <div className="lg:col-span-1">
-              <div className="bg-gradient-to-br from-orange-900/60 to-orange-700/40 rounded-2xl p-6 backdrop-blur-sm border border-orange-800/30 h-full">
-                <h2 className="text-xl font-semibold text-white mb-6">
+              <div className="h-full p-6 border bg-gradient-to-br from-orange-900/60 to-orange-700/40 rounded-2xl backdrop-blur-sm border-orange-800/30">
+                <h2 className="mb-6 text-xl font-semibold text-white">
                   Weather Snapshot
                 </h2>
 
                 <div className="flex flex-col items-center mb-8">
-                  <SunIcon className="w-20 h-20 text-yellow-400 mb-4" />
-                  <div className="text-6xl font-bold text-white mb-2">
+                  <SunIcon className="w-20 h-20 mb-4 text-yellow-400" />
+                  <div className="mb-2 text-6xl font-bold text-white">
                     {weatherData?.temperature || 25}°C
                   </div>
-                  <div className="text-orange-200 text-lg">
+                  <div className="text-lg text-orange-200">
                     {weatherData?.condition || 'Pleasant'}
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-black/20 rounded-lg p-4">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-black/20">
                     <div className="flex items-center gap-3">
-                      <div className="bg-purple-500/30 p-2 rounded-lg">
+                      <div className="p-2 rounded-lg bg-purple-500/30">
                         <SunMediumIcon className="w-5 h-5 text-purple-300" />
                       </div>
                       <span className="text-white">UV Index</span>
@@ -450,26 +446,26 @@ export function HealthAdvisory() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between bg-black/20 rounded-lg p-4">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-black/20">
                     <div className="flex items-center gap-3">
-                      <div className="bg-blue-500/30 p-2 rounded-lg">
+                      <div className="p-2 rounded-lg bg-blue-500/30">
                         <DropletIcon className="w-5 h-5 text-blue-300" />
                       </div>
                       <span className="text-white">Humidity</span>
                     </div>
-                    <span className="text-blue-400 font-semibold">
+                    <span className="font-semibold text-blue-400">
                       {weatherData?.humidity || 65}%
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between bg-black/20 rounded-lg p-4">
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-black/20">
                     <div className="flex items-center gap-3">
-                      <div className="bg-green-500/30 p-2 rounded-lg">
+                      <div className="p-2 rounded-lg bg-green-500/30">
                         <WindIcon className="w-5 h-5 text-green-300" />
                       </div>
                       <span className="text-white">Wind</span>
                     </div>
-                    <span className="text-green-400 font-semibold">
+                    <span className="font-semibold text-green-400">
                       {weatherData?.windStatus || 12} km/h
                     </span>
                   </div>
@@ -480,11 +476,11 @@ export function HealthAdvisory() {
 
           {/* Active Advisories Section */}
           <section
-            className="bg-gradient-to-br from-gray-900/80 to-gray-800/80 rounded-2xl p-8 backdrop-blur-sm border border-gray-700/50"
+            className="p-8 border bg-gradient-to-br from-gray-900/80 to-gray-800/80 rounded-2xl backdrop-blur-sm border-gray-700/50"
             role="region"
             aria-label="Active Advisories"
           >
-            <h2 className="text-2xl font-bold text-white mb-6">Active Advisories</h2>
+            <h2 className="mb-6 text-2xl font-bold text-white">Active Advisories</h2>
             <div className="space-y-4">
               {advisories.map((advisory) => {
                 const Icon = advisory.icon
@@ -495,18 +491,18 @@ export function HealthAdvisory() {
                     role="alert"
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4 flex-1">
+                      <div className="flex items-start flex-1 gap-4">
                         <div className={`${advisory.iconBg} p-3 rounded-lg flex-shrink-0`}>
                           <Icon className={`w-6 h-6 ${advisory.iconColor}`} />
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-white font-semibold text-lg mb-2">
+                          <h3 className="mb-2 text-lg font-semibold text-white">
                             {advisory.title}
                           </h3>
-                          <p className="text-gray-300 text-sm mb-3">
+                          <p className="mb-3 text-sm text-gray-300">
                             {advisory.description}
                           </p>
-                          <span className="text-gray-400 text-xs">
+                          <span className="text-xs text-gray-400">
                             {advisory.time}
                           </span>
                         </div>

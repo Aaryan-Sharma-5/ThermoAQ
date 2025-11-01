@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
-import { PageHeader } from '../components/PageHeader'
+import { Header } from '../layout/Header'
 import { GlobalWeatherMap } from '../components/weather/GlobalWeatherMap'
 import { HourlyForecast } from '../components/weather/HourlyForecast'
 import { OtherCities } from '../components/weather/OtherCities'
@@ -115,10 +115,8 @@ export function WeatherApp() {
 
   return (
     <div className="w-full min-h-screen text-white bg-black">
-      <PageHeader 
-        title="Weather Dashboard"
-        selectedLocation={`${selectedLocation}, India`}
-        onLocationChange={(location) => handleLocationChange(location.split(',')[0])}
+      <Header 
+        onLocationChange={handleLocationChange}
         onRefresh={handleRefresh}
       />
       <StatusBar

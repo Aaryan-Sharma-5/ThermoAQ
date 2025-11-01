@@ -4,7 +4,7 @@ import { AQITrend } from '../components/analytics/AQITrend'
 import { DistrictComparison } from '../components/analytics/DistrictComparison'
 import { Forecast } from '../components/analytics/Forecast'
 import { PollutantBreakdown } from '../components/analytics/PollutantBreakdown'
-import { PageHeader } from '../components/PageHeader'
+import { Header } from '../layout/Header'
 import aqiService from '../services/aqiService'
 import weatherService from '../services/weatherService'
 
@@ -13,30 +13,6 @@ export function DistrictAnalytics() {
   const [weatherData, setWeatherData] = useState(null)
   const [aqiData, setAqiData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isDistrictSelectorOpen, setIsDistrictSelectorOpen] = useState(false)
-
-  const availableDistricts = [
-    'Mumbai, Maharashtra',
-    'Delhi, Delhi',
-    'Kolkata, West Bengal',
-    'Bangalore, Karnataka',
-    'Chennai, Tamil Nadu',
-    'Hyderabad, Telangana',
-    'Pune, Maharashtra',
-    'Ahmedabad, Gujarat',
-    'Jaipur, Rajasthan',
-    'Surat, Gujarat',
-    'Lucknow, Uttar Pradesh',
-    'Kanpur, Uttar Pradesh',
-    'Nagpur, Maharashtra',
-    'Indore, Madhya Pradesh',
-    'Thane, Maharashtra',
-    'Bhopal, Madhya Pradesh',
-    'Visakhapatnam, Andhra Pradesh',
-    'Patna, Bihar',
-    'Vadodara, Gujarat',
-    'Ludhiana, Punjab'
-  ]
 
   const loadData = async () => {
     setIsLoading(true)
@@ -65,27 +41,14 @@ export function DistrictAnalytics() {
     }
   }
 
-  const handleDistrictChange = (newLocation) => {
-    setLocation(newLocation)
-    setIsDistrictSelectorOpen(false)
-  }
-
-  const handleRefresh = () => {
-    loadData()
-  }
-
   useEffect(() => {
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location])
 
   return (
     <div className="min-h-screen w-full bg-slate-950 text-white">
-      <PageHeader 
-        title="District Analytics" 
-        selectedLocation={location}
-        onLocationChange={setLocation}
-        onRefresh={handleRefresh}
-      />
+      <Header onLocationChange={setLocation} />
       <main className="container mx-auto px-4 py-6 max-w-7xl">
         {/* District Title and AQI */}
         <div className="mb-8">

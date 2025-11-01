@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { PageHeader } from '../components/PageHeader';
+import { Header } from '../layout/Header';
 import { ExportShareFeatures } from '../components/features/ExportShareFeatures';
 import { FavoriteLocations } from '../components/features/FavoriteLocations';
 import { HourlyTemperatureGraph } from '../components/charts/HourlyTemperatureGraph';
@@ -67,11 +67,7 @@ export function AdvancedFeatures() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <PageHeader
-        title="Advanced Features"
-        selectedLocation={selectedLocation}
-        onLocationChange={setSelectedLocation}
-      />
+      <Header onLocationChange={setSelectedLocation} />
 
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Banner with User Info */}

@@ -1,12 +1,48 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
-import { AlertTriangleIcon, CloudIcon, LoaderIcon, MinusIcon, PlusIcon, ThermometerIcon } from 'lucide-react';
+import { 
+  AlertTriangleIcon, 
+  CloudIcon, 
+  LoaderIcon, 
+  MinusIcon, 
+  PlusIcon, 
+  ThermometerIcon,
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  CloudDrizzle,
+  CloudLightning,
+  CloudFog,
+  Sun,
+  CloudSun,
+  Moon,
+  Snowflake,
+  Cloudy
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
-import { PageHeader } from '../components/PageHeader';
+import { Header } from '../layout/Header';
 import aqiService from '../services/aqiService';
 import weatherService from '../services/weatherService';
+
+// Icon mapping function
+const getIconComponent = (iconName) => {
+  const icons = {
+    Sun,
+    Moon,
+    CloudSun,
+    Cloud,
+    Cloudy,
+    CloudFog,
+    CloudRain,
+    CloudSnow,
+    CloudDrizzle,
+    CloudLightning,
+    Snowflake
+  };
+  return icons[iconName] || Cloud;
+};
 
 // Add CSS for custom markers
 const mapStyles = `
@@ -318,7 +354,7 @@ function MapView({ citiesData, temperatureData, isLoading }) {
       )}
       
       {/* Map Controls */}
-      <div className="absolute top-4 right-4 lg:right-[340px] flex flex-col gap-2 z-[1000]">
+      <div className="absolute top-20 right-2 lg:right-[calc(20rem+0.5rem)] xl:right-[calc(24rem+0.5rem)] flex flex-col gap-2 z-[1000]">
         <button
           className="bg-slate-800/90 backdrop-blur-sm text-white p-3 rounded-lg hover:bg-slate-700 transition-all duration-200 shadow-lg"
           aria-label="Zoom in"
@@ -469,30 +505,33 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
           {isLoading ? (
             Array(3).fill(0).map((_, i) => <LoadingCard key={i} />)
           ) : (
-            forecastData?.daily?.slice(0, 3).map((day) => (
-              <div 
-                key={day.day} 
-                className="bg-slate-700/70 backdrop-blur-sm p-4 rounded-lg hover:bg-slate-600/70 transition-all duration-200 cursor-pointer border border-slate-600"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{day.icon}</span>
-                    <div>
-                      <div className="font-semibold text-green-400 text-lg">{day.day}</div>
-                      <div className="text-sm text-gray-300">{day.condition}</div>
+            forecastData?.daily?.slice(0, 3).map((day) => {
+              const WeatherIcon = getIconComponent(day.icon);
+              return (
+                <div 
+                  key={day.day} 
+                  className="bg-slate-700/70 backdrop-blur-sm p-4 rounded-lg hover:bg-slate-600/70 transition-all duration-200 cursor-pointer border border-slate-600"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <WeatherIcon className="w-8 h-8 text-blue-400" />
+                      <div>
+                        <div className="font-semibold text-green-400 text-lg">{day.day}</div>
+                        <div className="text-sm text-gray-300">{day.condition}</div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-white font-semibold">
-                      {day.high}°/{day.low}°
-                    </div>
-                    <div className="text-xs text-blue-400">
-                      Rain: {day.chanceOfRain}%
+                    <div className="text-right">
+                      <div className="text-white font-semibold">
+                        {day.high}°/{day.low}°
+                      </div>
+                      <div className="text-xs text-blue-400">
+                        Rain: {day.chanceOfRain}%
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )) || [
+              );
+            }) || [
               <div key="placeholder" className="bg-slate-700/70 p-4 rounded-lg">
                 <div className="text-gray-400 text-center">No forecast data available</div>
               </div>
@@ -646,18 +685,9 @@ export function HeatWaveMap() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLocation]);
 
-  const handleRefresh = () => {
-    loadData();
-  };
-
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-      <PageHeader 
-        title="Heat Wave Monitor"
-        selectedLocation={selectedLocation}
-        onLocationChange={setSelectedLocation}
-        onRefresh={handleRefresh}
-      />
+      <Header onLocationChange={setSelectedLocation} />
       <main className="flex-1 flex flex-col lg:flex-row relative">
         <MapView 
           citiesData={citiesData} 

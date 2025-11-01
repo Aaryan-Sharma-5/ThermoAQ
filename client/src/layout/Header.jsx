@@ -3,8 +3,11 @@ import {
     LogIn,
     LogOut,
     MapPin,
+    Menu,
     User,
     UserPlus,
+    X,
+    RefreshCw,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -22,11 +25,22 @@ const indianCities = [
   "Ahmedabad, Gujarat",
   "Jaipur, Rajasthan",
   "Lucknow, Uttar Pradesh",
+  "Kanpur, Uttar Pradesh",
+  "Nagpur, Maharashtra",
+  "Indore, Madhya Pradesh",
+  "Thane, Maharashtra",
+  "Bhopal, Madhya Pradesh",
+  "Visakhapatnam, Andhra Pradesh",
+  "Patna, Bihar",
+  "Vadodara, Gujarat",
+  "Ludhiana, Punjab",
+  "Surat, Gujarat",
 ];
 
-export const Header = ({ onLocationChange }) => {
+export const Header = ({ onLocationChange, onRefresh }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Mumbai, Maharashtra");
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -72,60 +86,79 @@ export const Header = ({ onLocationChange }) => {
 
   return (
     <>
-      <div className="relative z-50 flex items-center justify-between px-6 py-4 border-b bg-black/20 backdrop-blur-sm border-white/10">
-        <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-12 h-12">
-              <img
-                src="/favicon_io/android-chrome-192x192.png"
-                alt="ThermoAQ Logo"
-                className="w-8 h-8"
-              />
-            </div>
-            <span className="text-xl font-semibold text-white">ThermoAQ</span>
+      <div className="relative z-50 flex items-center justify-between px-4 py-4 border-b lg:px-6 bg-black/20 backdrop-blur-sm border-white/10">
+        {/* Logo */}
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12">
+            <img
+              src="/favicon_io/android-chrome-192x192.png"
+              alt="ThermoAQ Logo"
+              className="w-6 h-6 lg:w-8 lg:h-8"
+            />
           </div>
-
-          <nav className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate("/")}
-              className="font-medium text-white transition-colors hover:text-blue-400"
-            >
-              Home
-            </button>
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="font-medium text-white transition-colors hover:text-blue-400"
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => {
-                if (user) {
-                  navigate("/advanced");
-                } else {
-                  navigate("/login");
-                }
-              }}
-              className="relative font-medium text-white transition-colors hover:text-green-400"
-            >
-              Advanced
-              {!user && (
-                <span className="absolute -top-1 -right-6 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="font-medium text-white transition-colors hover:text-blue-400"
-            >
-              Dashboard
-            </button>
-          </nav>
+          <span className="text-lg font-semibold text-white lg:text-xl">ThermoAQ</span>
         </div>
 
-        <div className="flex items-center space-x-4">
+        {/* Desktop Navigation */}
+        <nav className="items-center hidden ml-8 space-x-6 lg:flex">
+          <button
+            onClick={() => navigate("/")}
+            className="font-medium text-white transition-colors hover:text-blue-400"
+          >
+            Home
+          </button>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="font-medium text-white transition-colors hover:text-blue-400"
+          >
+            Dashboard
+          </button>
+          <button
+            onClick={() => navigate("/heatwave")}
+            className="font-medium text-white transition-colors hover:text-blue-400"
+          >
+            Heat Wave
+          </button>
+          <button
+            onClick={() => navigate("/analytics")}
+            className="font-medium text-white transition-colors hover:text-blue-400"
+          >
+            Analytics
+          </button>
+          <button
+            onClick={() => navigate("/health-advisory")}
+            className="font-medium text-white transition-colors hover:text-blue-400"
+          >
+            Health Advisory
+          </button>
+          <button
+            onClick={() => {
+              if (user) {
+                navigate("/advanced");
+              } else {
+                navigate("/login");
+              }
+            }}
+            className="font-medium text-white transition-colors hover:text-blue-400"
+          >
+            Advanced
+          </button>
+        </nav>
+
+        {/* Desktop Right Section */}
+        <div className="items-center hidden space-x-4 lg:flex">
+          {/* Refresh Button */}
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              className="p-2 text-slate-400 hover:text-white transition-colors hover:bg-white/10 rounded-lg"
+              title="Refresh data"
+            >
+              <RefreshCw size={18} />
+            </button>
+          )}
+
+          {/* City Dropdown */}
           <div className="relative" ref={cityDropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -163,9 +196,8 @@ export const Header = ({ onLocationChange }) => {
               </div>
             )}
           </div>
-        </div>
 
-        <div className="flex items-center space-x-3">
+          {/* User Section */}
           {user ? (
             <div className="relative" ref={userDropdownRef}>
               <button
@@ -225,7 +257,196 @@ export const Header = ({ onLocationChange }) => {
             </>
           )}
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-white transition-colors rounded-lg lg:hidden hover:bg-white/10"
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="absolute left-0 right-0 z-40 border-b lg:hidden bg-slate-900/95 backdrop-blur-md border-white/10">
+          <div className="px-4 py-4 space-y-4">
+            {/* Mobile Navigation Links */}
+            <nav className="flex flex-col space-y-2">
+              <button
+                onClick={() => {
+                  navigate("/");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-4 py-3 font-medium text-left text-white transition-colors rounded-lg hover:bg-white/10"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/dashboard");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-4 py-3 font-medium text-left text-white transition-colors rounded-lg hover:bg-white/10"
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/heatwave");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-4 py-3 font-medium text-left text-white transition-colors rounded-lg hover:bg-white/10"
+              >
+                Heat Wave
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/analytics");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-4 py-3 font-medium text-left text-white transition-colors rounded-lg hover:bg-white/10"
+              >
+                Analytics
+              </button>
+              <button
+                onClick={() => {
+                  navigate("/health-advisory");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-4 py-3 font-medium text-left text-white transition-colors rounded-lg hover:bg-white/10"
+              >
+                Health Advisory
+              </button>
+              <button
+                onClick={() => {
+                  if (user) {
+                    navigate("/advanced");
+                  } else {
+                    navigate("/login");
+                  }
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-4 py-3 font-medium text-left text-white transition-colors rounded-lg hover:bg-white/10"
+              >
+                Advanced
+              </button>
+            </nav>
+
+            {/* Mobile City Selector */}
+            <div className="pt-2 border-t border-white/10">
+              {/* Refresh Button for Mobile */}
+              {onRefresh && (
+                <button
+                  onClick={() => {
+                    onRefresh();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center justify-center w-full px-4 py-3 mb-3 space-x-2 text-white transition-colors border rounded-lg border-white/20 hover:bg-white/10"
+                >
+                  <RefreshCw size={18} />
+                  <span className="font-medium">Refresh Data</span>
+                </button>
+              )}
+
+              <div className="relative" ref={cityDropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center justify-between w-full px-4 py-3 text-white transition-colors border rounded-lg bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
+                >
+                  <div className="flex items-center space-x-2">
+                    <MapPin size={18} className="text-blue-400" />
+                    <span className="text-sm font-medium">{selectedCity}</span>
+                  </div>
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="z-[60] w-full mt-2 border rounded-lg shadow-xl bg-slate-800/95 backdrop-blur-sm border-white/20">
+                    <div className="overflow-y-auto max-h-60">
+                      {indianCities.map((city) => (
+                        <button
+                          key={city}
+                          onClick={() => {
+                            setSelectedCity(city);
+                            setIsDropdownOpen(false);
+                            setIsMobileMenuOpen(false);
+                            if (onLocationChange) {
+                              onLocationChange(city);
+                            }
+                          }}
+                          className="w-full px-4 py-2 text-left text-white transition-colors border-b hover:bg-white/10 border-white/10 last:border-b-0"
+                        >
+                          {city}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile User Section */}
+            <div className="pt-2 border-t border-white/10">
+              {user ? (
+                <div className="space-y-2">
+                  <div className="flex items-center px-4 py-3 space-x-3 border rounded-lg bg-white/10 backdrop-blur-sm border-white/20">
+                    <Avatar name={user.name} size="sm" />
+                    <span className="font-medium text-white">{user.name}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-3 space-x-2 text-left text-white transition-colors rounded-lg hover:bg-white/10"
+                  >
+                    <User size={18} />
+                    <span>Profile</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-3 space-x-2 text-left text-red-400 transition-colors rounded-lg hover:bg-red-500/10"
+                  >
+                    <LogOut size={18} />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      handleLoginClick();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center w-full px-4 py-3 space-x-2 text-white transition-colors border rounded-lg border-white/20 hover:bg-white/10"
+                  >
+                    <LogIn size={18} />
+                    <span className="font-medium">Login</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleSignUpClick();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center w-full px-4 py-3 space-x-2 font-medium transition-colors bg-white rounded-lg text-slate-900 hover:bg-gray-100"
+                  >
+                    <UserPlus size={18} />
+                    <span>SignUp</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

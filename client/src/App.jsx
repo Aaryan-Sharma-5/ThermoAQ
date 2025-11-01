@@ -1,7 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
-import { MobileNav } from "./components/mobile/MobileNav";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { AdvancedFeatures } from "./pages/AdvancedFeatures";
@@ -30,7 +29,6 @@ function App() {
             <Route path="/login" element={<LoginForm />} />
             <Route path="/signup" element={<SignupForm />} />
           </Routes>
-          <MobileNav />
         </div>
       </Router>
     </AuthProvider>
