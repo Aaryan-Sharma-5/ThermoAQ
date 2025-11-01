@@ -1,24 +1,24 @@
+import {
+  Cloud,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSnow,
+  CloudSun,
+  Cloudy,
+  Droplets,
+  Flame,
+  Moon,
+  Snowflake,
+  Sun,
+  Wind
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Cloud, 
-  CloudDrizzle, 
-  CloudFog, 
-  CloudLightning, 
-  CloudRain, 
-  CloudSnow, 
-  CloudSun, 
-  Cloudy, 
-  Flame, 
-  Moon, 
-  Snowflake, 
-  Sun,
-  Droplets,
-  Wind,
-  Eye
-} from 'lucide-react';
 import landingPageImage from "../assets/images/landingPage.png";
-import { WeatherForecastChart } from '../components/charts/ChartComponents';
+import aqiBg from "../assets/images/LandingPage_AQI.png";
+import currentWeatherBg from "../assets/images/LandingPage_CurrentWeather.png";
 import { Header } from "../layout/Header";
 import aqiService from '../services/aqiService';
 import weatherService from '../services/weatherService';
@@ -395,105 +395,154 @@ const HomePage = () => {
               
               {/* Enhanced Air Quality Index Widget */}
               <div 
-                className="bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 rounded-3xl p-8 border border-slate-600/50 backdrop-blur-xl cursor-pointer hover:border-slate-500/70 hover:shadow-2xl hover:shadow-slate-900/50 transition-all duration-500 transform hover:scale-[1.02] group"
+                className="bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 rounded-3xl p-8 border border-slate-600/50 backdrop-blur-xl cursor-pointer hover:border-slate-500/70 hover:shadow-2xl hover:shadow-slate-900/50 transition-all duration-500 transform hover:scale-[1.02] group relative overflow-hidden"
                 onClick={() => setShowAQIMap(true)}
                 style={{
+                  backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)), url(${aqiBg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
                   boxShadow: `0 0 30px ${aqiData?.color}20, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
                 }}
               >
-                {/* Header Section with improved spacing */}
-                <div className="flex items-center justify-between mb-8">
+                {/* Header Section */}
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-blue-500/20 rounded-xl">
+                    <div className="p-3 bg-blue-500/20 rounded-xl backdrop-blur-sm">
                       <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-bold tracking-tight text-white">Air Quality Index</h3>
+                    <h3 className="text-xl font-bold tracking-tight text-white drop-shadow-lg">Air Quality Index</h3>
                   </div>
-                  <div className="flex items-center px-4 py-2 space-x-2 border rounded-full bg-red-500/10 border-red-500/20">
+                  <div className="flex items-center px-4 py-2 space-x-2 border rounded-full bg-red-500/10 border-red-500/20 backdrop-blur-sm">
                     <div 
                       className="w-2.5 h-2.5 rounded-full animate-pulse" 
                       style={{ backgroundColor: aqiData?.color || '#EF4444' }}
                     />
-                    <span className="text-sm font-medium text-red-400">Live Data</span>
+                    <span className="text-sm font-medium text-red-400">Live</span>
                   </div>
                 </div>
                 
                 {/* Main AQI Display Section */}
-                <div className="relative mb-8 overflow-hidden bg-center bg-cover rounded-2xl" 
-                     style={{
-                       backgroundImage: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url("https://images.unsplash.com/photo-1480714378408-67cf0d13bc1f?w=600&h=300&fit=crop")',
-                       height: '240px'
-                     }}>
-                  
-                  {/* AQI Number and Status*/}
-                  <div className="absolute left-8 top-8">
+                <div className="flex items-start justify-between mb-6">
+                  {/* Left: AQI Number and Status */}
+                  <div className="flex-1">
                     <div 
-                      className="mb-2 font-bold leading-none text-7xl"
+                      className="mb-2 font-bold leading-none text-7xl drop-shadow-lg"
                       style={{ color: aqiData?.color || '#F59E0B' }}
                     >
-                      {aqiData?.aqi || 79}
+                      {aqiData?.aqi || 64}
                     </div>
-                  </div>
-
-                  {/* Status and Location */}
-                  <div className="absolute left-8 top-32">
                     <div 
-                      className="text-base font-semibold tracking-wide uppercase"
+                      className="text-lg font-semibold tracking-wide uppercase drop-shadow-md"
                       style={{ color: aqiData?.color || '#F59E0B' }}
                     >
                       {aqiData?.level || 'Moderate'}
                     </div>
-                    <div className="mt-2 text-sm text-gray-300">
+                    <div className="mt-2 text-sm text-gray-300 drop-shadow-sm">
                       {aqiData?.location || selectedLocation}
                     </div>
                   </div>
 
-                  {/* Real Pollutant Levels - Right side */}
+                  {/* Right: Pollutant Breakdown */}
                   {aqiData?.pollutants && (
-                    <div className="absolute space-y-4 right-8 top-8">
-                      <div className="p-4 border bg-black/40 backdrop-blur-sm rounded-xl border-white/10">
-                        <h4 className="mb-3 text-sm font-semibold text-white">Pollutant Levels</h4>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="w-12 text-sm font-medium text-gray-300">PM2.5</span>
-                            <div className="w-16 h-2 mx-3 bg-gray-700 rounded-full">
+                    <div className="p-4 border bg-black/50 backdrop-blur-sm rounded-xl border-white/10 min-w-[160px]">
+                      <h4 className="mb-3 text-sm font-semibold text-white">Distribution</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-300">PM2.5</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-2 bg-gray-700 rounded-full">
                               <div 
                                 className="h-2 transition-all duration-500 rounded-full" 
                                 style={{
                                   width: `${Math.min((aqiData.pollutants.pm25 / 100) * 100, 100)}%`,
-                                  backgroundColor: aqiData.pollutants.pm25 > 50 ? '#EF4444' : aqiData.pollutants.pm25 > 25 ? '#F59E0B' : '#10B981'
+                                  backgroundColor: aqiData.pollutants.pm25 <= 12 ? '#10B981' : 
+                                                 aqiData.pollutants.pm25 <= 35 ? '#F59E0B' : '#EF4444'
                                 }}
                               ></div>
                             </div>
-                            <span className="w-8 text-sm font-bold text-right text-white">{aqiData.pollutants.pm25}</span>
+                            <span 
+                              className="text-sm font-bold"
+                              style={{
+                                color: aqiData.pollutants.pm25 <= 12 ? '#10B981' : 
+                                       aqiData.pollutants.pm25 <= 35 ? '#F59E0B' : '#EF4444'
+                              }}
+                            >
+                              {aqiData.pollutants.pm25}
+                            </span>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="w-12 text-sm font-medium text-gray-300">PM10</span>
-                            <div className="w-16 h-2 mx-3 bg-gray-700 rounded-full">
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-300">PM10</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-2 bg-gray-700 rounded-full">
                               <div 
                                 className="h-2 transition-all duration-500 rounded-full" 
                                 style={{
                                   width: `${Math.min((aqiData.pollutants.pm10 / 150) * 100, 100)}%`,
-                                  backgroundColor: aqiData.pollutants.pm10 > 75 ? '#EF4444' : aqiData.pollutants.pm10 > 50 ? '#F59E0B' : '#10B981'
+                                  backgroundColor: aqiData.pollutants.pm10 <= 54 ? '#10B981' : 
+                                                 aqiData.pollutants.pm10 <= 154 ? '#F59E0B' : '#EF4444'
                                 }}
                               ></div>
                             </div>
-                            <span className="w-8 text-sm font-bold text-right text-white">{aqiData.pollutants.pm10}</span>
+                            <span 
+                              className="text-sm font-bold"
+                              style={{
+                                color: aqiData.pollutants.pm10 <= 54 ? '#10B981' : 
+                                       aqiData.pollutants.pm10 <= 154 ? '#F59E0B' : '#EF4444'
+                              }}
+                            >
+                              {aqiData.pollutants.pm10}
+                            </span>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="w-12 text-sm font-medium text-gray-300">O₃</span>
-                            <div className="w-16 h-2 mx-3 bg-gray-700 rounded-full">
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-300">NO₂</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-2 bg-gray-700 rounded-full">
+                              <div 
+                                className="h-2 transition-all duration-500 rounded-full" 
+                                style={{
+                                  width: `${Math.min((aqiData.pollutants.no2 || 28) / 100 * 100, 100)}%`,
+                                  backgroundColor: (aqiData.pollutants.no2 || 28) <= 53 ? '#10B981' : 
+                                                 (aqiData.pollutants.no2 || 28) <= 100 ? '#F59E0B' : '#EF4444'
+                                }}
+                              ></div>
+                            </div>
+                            <span 
+                              className="text-sm font-bold"
+                              style={{
+                                color: (aqiData.pollutants.no2 || 28) <= 53 ? '#10B981' : 
+                                       (aqiData.pollutants.no2 || 28) <= 100 ? '#F59E0B' : '#EF4444'
+                              }}
+                            >
+                              {aqiData.pollutants.no2 || 28}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-300">O₃</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-2 bg-gray-700 rounded-full">
                               <div 
                                 className="h-2 transition-all duration-500 rounded-full" 
                                 style={{
                                   width: `${Math.min((aqiData.pollutants.o3 / 100) * 100, 100)}%`,
-                                  backgroundColor: aqiData.pollutants.o3 > 60 ? '#EF4444' : aqiData.pollutants.o3 > 40 ? '#F59E0B' : '#10B981'
+                                  backgroundColor: aqiData.pollutants.o3 <= 54 ? '#10B981' : 
+                                                 aqiData.pollutants.o3 <= 70 ? '#F59E0B' : '#EF4444'
                                 }}
                               ></div>
                             </div>
-                            <span className="w-8 text-sm font-bold text-right text-white">{aqiData.pollutants.o3}</span>
+                            <span 
+                              className="text-sm font-bold"
+                              style={{
+                                color: aqiData.pollutants.o3 <= 54 ? '#10B981' : 
+                                       aqiData.pollutants.o3 <= 70 ? '#F59E0B' : '#EF4444'
+                              }}
+                            >
+                              {aqiData.pollutants.o3}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -501,70 +550,97 @@ const HomePage = () => {
                   )}
                 </div>
 
-                {/* Enhanced AQI Trend Chart with better spacing */}
-                {aqiHistory.length > 0 && (
-                  <div className="p-4 bg-slate-700/50 rounded-xl">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-semibold text-white">7-Day Trend</h4>
-                      <div className="text-xs text-gray-400">Latest Week</div>
-                    </div>
-                    <div className="flex items-end h-16 space-x-2">
-                      {aqiHistory.slice(0, 7).map((item, index) => (
-                        <div className="flex flex-col items-center flex-1 space-y-1" key={index}>
-                          <div 
-                            className="w-full transition-all duration-500 rounded-t hover:opacity-80"
-                            style={{ 
-                              height: `${Math.min((item.aqi / 200) * 100, 100)}%`,
-                              backgroundColor: item.color || '#3B82F6',
-                              minHeight: '8px'
-                            }}
-                          />
-                          <div className="text-xs text-gray-400">
-                            {new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)}
-                          </div>
+                {/* Bottom Section - AQI Level Indicators and Health Info */}
+                <div className="mt-6 space-y-4">
+                  {/* AQI Level Scale */}
+                  <div className="p-4 bg-black/40 backdrop-blur-sm rounded-xl border border-white/10">
+                    <h4 className="mb-3 text-sm font-semibold text-white">AQI Scale</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-3 bg-green-500 rounded"></div>
+                          <span className="text-sm text-gray-300">Good</span>
                         </div>
-                      ))}
+                        <span className="text-xs text-gray-400">0-50</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-3 bg-yellow-500 rounded"></div>
+                          <span className="text-sm text-gray-300">Moderate</span>
+                        </div>
+                        <span className="text-xs text-gray-400">51-100</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-3 bg-orange-500 rounded"></div>
+                          <span className="text-sm text-gray-300">Unhealthy</span>
+                        </div>
+                        <span className="text-xs text-gray-400">101-150</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-3 bg-red-500 rounded"></div>
+                          <span className="text-sm text-gray-300">Very Unhealthy</span>
+                        </div>
+                        <span className="text-xs text-gray-400">151+</span>
+                      </div>
                     </div>
                   </div>
-                )}
+
+                  {/* Health Recommendation */}
+                  <div className="p-4 bg-black/40 backdrop-blur-sm rounded-xl border border-white/10">
+                    <div className="flex items-start space-x-3">
+                      <div className="p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
+                        <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-white mb-1">Health Advisory</h4>
+                        <p className="text-xs text-gray-300 leading-relaxed">
+                          {aqiData?.aqi <= 50 ? 
+                            "Air quality is good. Ideal for outdoor activities." :
+                            aqiData?.aqi <= 100 ? 
+                            "Moderate air quality. Sensitive individuals should consider limiting prolonged outdoor exertion." :
+                            aqiData?.aqi <= 150 ?
+                            "Unhealthy for sensitive groups. Consider wearing a mask outdoors." :
+                            "Very unhealthy air quality. Avoid prolonged outdoor activities."
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Enhanced Weather Forecast Widget (same size as AQI) */}
               <div className="bg-gradient-to-br from-blue-900/90 via-blue-800/80 to-slate-800/90 rounded-3xl p-8 border border-blue-600/50 backdrop-blur-xl relative overflow-hidden hover:shadow-2xl hover:shadow-blue-900/50 hover:border-blue-500/70 transition-all duration-500 group cursor-pointer transform hover:scale-[1.01]"
                    style={{
+                     backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url(${currentWeatherBg})`,
+                     backgroundSize: 'cover',
+                     backgroundPosition: 'center',
                      boxShadow: '0 0 30px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                    }}
                    onClick={() => navigate('/dashboard')}
               >
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-yellow-500/20 rounded-xl">
+                    <div className="p-2 bg-yellow-500/20 rounded-xl backdrop-blur-sm">
                       <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-bold tracking-tight text-white">Weather Forecast</h3>
+                    <h3 className="text-xl font-bold tracking-tight text-white drop-shadow-lg">Current Weather</h3>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <button 
-                      className="px-3 py-1.5 bg-blue-500/20 text-blue-300 text-xs font-medium rounded-full border border-blue-500/30 hover:bg-blue-500/40 hover:border-blue-400/50 hover:text-blue-200 hover:scale-105 transition-all duration-300 transform"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/dashboard');
-                      }}
-                    >
-                      View Dashboard
-                    </button>
-                    <div className="text-3xl transition-all duration-500 transform group-hover:scale-125 group-hover:rotate-12">
-                      {weatherData?.icon ? (
-                        (() => {
-                          const IconComponent = getIconComponent(weatherData.icon);
-                          return <IconComponent className="w-12 h-12 text-blue-400 drop-shadow-lg" />;
-                        })()
-                      ) : (
-                        <Sun className="w-12 h-12 text-yellow-400 drop-shadow-lg" />
-                      )}
-                    </div>
+                  <div className="text-4xl transition-all duration-500 transform group-hover:scale-125 group-hover:rotate-12">
+                    {weatherData?.icon ? (
+                      (() => {
+                        const IconComponent = getIconComponent(weatherData.icon);
+                        return <IconComponent className="w-12 h-12 text-yellow-400 drop-shadow-lg" />;
+                      })()
+                    ) : (
+                      <Sun className="w-12 h-12 text-yellow-400 drop-shadow-lg" />
+                    )}
                   </div>
                 </div>
                 
@@ -581,88 +657,70 @@ const HomePage = () => {
                   </div>
                 ) : (
                   <div className="relative">
-                    <div className="relative text-center">
-                      <div className="mb-2 text-6xl font-bold text-white">
+                    {/* Main Temperature Display */}
+                    <div className="text-center mb-6">
+                      <div className="mb-2 text-6xl font-bold text-white drop-shadow-lg">
                         {weatherData?.temperature || 30}°C
                       </div>
-                      <div className="mb-6 text-sm text-blue-200">
+                      <div className="mb-4 text-lg text-blue-200 drop-shadow-md">
                         {weatherData?.condition || 'Sunny & Clear'}
                       </div>
+                    </div>
                       
-                      {/* Enhanced Weather Details */}
-                      <div className="grid grid-cols-3 gap-6 mb-8">
-                        <div className="p-4 text-center transition-all duration-300 border cursor-pointer bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 hover:scale-105 group border-white/5 hover:border-white/20">
-                          <Droplets className="w-8 h-8 mx-auto mb-2 text-blue-300 transition-all duration-300 group-hover:scale-125 group-hover:text-blue-200" />
-                          <div className="mb-1 text-xs font-medium tracking-wider text-blue-200 uppercase">Humidity</div>
-                          <div className="text-lg font-bold text-white">
-                            {weatherData?.humidity || 68}%
-                          </div>
-                          <div className="w-full bg-blue-900/30 rounded-full h-1.5 mt-2">
-                            <div 
-                              className="bg-gradient-to-r from-blue-400 to-blue-300 h-1.5 rounded-full transition-all duration-1000"
-                              style={{ width: `${weatherData?.humidity || 68}%` }}
-                            />
-                          </div>
-                        </div>
-                        <div className="p-4 text-center transition-all duration-300 border cursor-pointer bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 hover:scale-105 group border-white/5 hover:border-white/20">
-                          <Wind className="w-8 h-8 mx-auto mb-2 text-green-300 transition-all duration-300 group-hover:scale-125 group-hover:text-green-200" />
-                          <div className="mb-1 text-xs font-medium tracking-wider text-blue-200 uppercase">Wind Speed</div>
-                          <div className="text-lg font-bold text-white">
-                            {weatherData?.windStatus || 12} km/h
-                          </div>
-                          <div className="w-full bg-green-900/30 rounded-full h-1.5 mt-2">
-                            <div 
-                              className="bg-gradient-to-r from-green-400 to-green-300 h-1.5 rounded-full transition-all duration-1000"
-                              style={{ width: `${Math.min((weatherData?.windStatus || 12) / 50 * 100, 100)}%` }}
-                            />
-                          </div>
-                        </div>
-                        <div className="p-4 text-center transition-all duration-300 border cursor-pointer bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 hover:scale-105 group border-white/5 hover:border-white/20">
-                          <Sun className="w-8 h-8 mx-auto mb-2 text-orange-300 transition-all duration-300 group-hover:scale-125 group-hover:text-orange-200" />
-                          <div className="mb-1 text-xs font-medium tracking-wider text-blue-200 uppercase">UV Index</div>
-                          <div className="text-lg font-bold text-white">
-                            {Math.round(weatherData?.uvIndex || 0)}
-                          </div>
-                          <div className="w-full bg-orange-900/30 rounded-full h-1.5 mt-2">
-                            <div 
-                              className={`h-1.5 rounded-full transition-all duration-1000 ${
-                                Math.round(weatherData?.uvIndex || 0) <= 2 ? 'bg-gradient-to-r from-green-400 to-green-300' :
-                                Math.round(weatherData?.uvIndex || 0) <= 5 ? 'bg-gradient-to-r from-yellow-400 to-yellow-300' :
-                                Math.round(weatherData?.uvIndex || 0) <= 7 ? 'bg-gradient-to-r from-orange-400 to-orange-300' :
-                                'bg-gradient-to-r from-red-400 to-red-300'
-                              }`}
-                              style={{ width: `${Math.min((Math.round(weatherData?.uvIndex || 0)) / 12 * 100, 100)}%` }}
-                            />
-                          </div>
+                    {/* Weather Details Grid */}
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="p-3 text-center transition-all duration-300 border bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 hover:scale-105 group border-white/10 hover:border-white/30">
+                        <Droplets className="w-6 h-6 mx-auto mb-2 text-blue-300 transition-all duration-300 group-hover:scale-125" />
+                        <div className="mb-1 text-xs font-medium text-blue-200">Humidity</div>
+                        <div className="text-lg font-bold text-white">
+                          {weatherData?.humidity || 65}%
                         </div>
                       </div>
+                      <div className="p-3 text-center transition-all duration-300 border bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 hover:scale-105 group border-white/10 hover:border-white/30">
+                        <Wind className="w-6 h-6 mx-auto mb-2 text-green-300 transition-all duration-300 group-hover:scale-125" />
+                        <div className="mb-1 text-xs font-medium text-blue-200">Wind</div>
+                        <div className="text-lg font-bold text-white">
+                          {weatherData?.windStatus || 12} km/h
+                        </div>
+                      </div>
+                      <div className="p-3 text-center transition-all duration-300 border bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 hover:scale-105 group border-white/10 hover:border-white/30">
+                        <Sun className="w-6 h-6 mx-auto mb-2 text-orange-300 transition-all duration-300 group-hover:scale-125" />
+                        <div className="mb-1 text-xs font-medium text-blue-200">UV Index</div>
+                        <div className="text-lg font-bold text-white">
+                          {Math.round(weatherData?.uvIndex || 8)}
+                        </div>
+                      </div>
+                    </div>
 
-                      {/* Real 7-Day Forecast */}
-                      <div className="p-3 bg-white/10 rounded-xl">
-                        <div className="mb-3 text-xs font-medium tracking-wider text-blue-200 uppercase">7-Day Forecast</div>
-                        {forecastData?.daily ? (
-                          <div className="grid grid-cols-7 gap-1">
-                            {forecastData.daily.slice(0, 7).map((item, index) => {
-                              const IconComponent = getIconComponent(item.icon);
-                              return (
-                                <div key={index} className="p-2 text-center transition-all duration-300 border rounded-lg cursor-pointer bg-white/5 hover:bg-white/15 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/20 border-white/5 hover:border-blue-400/30">
-                                  <div className="mb-1 text-xs font-medium text-blue-200">{item.day}</div>
-                                  <IconComponent className="w-5 h-5 mx-auto my-1 text-blue-300" />
-                                  <div className="text-sm font-bold text-white">{item.high}°</div>
-                                  <div className="text-xs text-blue-300">{item.low}°</div>
-                                  {item.chanceOfRain > 0 && (
-                                    <div className="mt-1 text-xs text-blue-400">{item.chanceOfRain}%</div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="h-16">
-                            <WeatherForecastChart forecastData={forecastData} className="h-full" />
-                          </div>
-                        )}
-                      </div>
+                    {/* 7-Day Forecast */}
+                    <div className="p-4 bg-black/30 backdrop-blur-sm rounded-xl border border-white/10">
+                      <div className="mb-3 text-sm font-semibold text-white">7-Day Forecast</div>
+                      {forecastData?.daily ? (
+                        <div className="grid grid-cols-7 gap-2">
+                          {forecastData.daily.slice(0, 7).map((item, index) => {
+                            const IconComponent = getIconComponent(item.icon);
+                            return (
+                              <div key={index} className="p-2 text-center transition-all duration-300 border rounded-lg cursor-pointer bg-white/5 hover:bg-white/15 hover:scale-105 border-white/10 hover:border-white/30">
+                                <div className="mb-1 text-xs font-medium text-blue-200">{item.day}</div>
+                                <IconComponent className="w-5 h-5 mx-auto my-2 text-yellow-400" />
+                                <div className="text-sm font-bold text-white">{item.high}°</div>
+                                <div className="text-xs text-blue-300">{item.low}°</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-5 gap-2">
+                          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((day, index) => (
+                            <div key={day} className="p-2 text-center bg-white/5 rounded-lg border border-white/10">
+                              <div className="mb-1 text-xs text-blue-200">{day}</div>
+                              <Sun className="w-4 h-4 mx-auto my-1 text-yellow-400" />
+                              <div className="text-sm font-bold text-white">{32 + index}°</div>
+                              <div className="text-xs text-blue-300">{28 + index}°</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
