@@ -14,7 +14,7 @@ import {
   Sun,
   Wind
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import landingPageImage from "../assets/images/landingPage.png";
 import aqiBg from "../assets/images/LandingPage_AQI.png";
@@ -42,6 +42,43 @@ const getIconComponent = (iconName) => {
   return icons[iconName] || Cloud;
 };
 
+// All major Indian cities with coordinates
+const indianCities = [
+  { name: 'Delhi', lat: 28.6139, lon: 77.2090 },
+  { name: 'Mumbai', lat: 19.0760, lon: 72.8777 },
+  { name: 'Bangalore', lat: 12.9716, lon: 77.5946 },
+  { name: 'Chennai', lat: 13.0827, lon: 80.2707 },
+  { name: 'Kolkata', lat: 22.5726, lon: 88.3639 },
+  { name: 'Hyderabad', lat: 17.3850, lon: 78.4867 },
+  { name: 'Pune', lat: 18.5204, lon: 73.8567 },
+  { name: 'Ahmedabad', lat: 23.0225, lon: 72.5714 },
+  { name: 'Jaipur', lat: 26.9124, lon: 75.7873 },
+  { name: 'Surat', lat: 21.1702, lon: 72.8311 },
+  { name: 'Lucknow', lat: 26.8467, lon: 80.9462 },
+  { name: 'Kanpur', lat: 26.4499, lon: 80.3319 },
+  { name: 'Nagpur', lat: 21.1458, lon: 79.0882 },
+  { name: 'Indore', lat: 22.7196, lon: 75.8577 },
+  { name: 'Thane', lat: 19.2183, lon: 72.9781 },
+  { name: 'Bhopal', lat: 23.2599, lon: 77.4126 },
+  { name: 'Visakhapatnam', lat: 17.6868, lon: 83.2185 },
+  { name: 'Patna', lat: 25.5941, lon: 85.1376 },
+  { name: 'Vadodara', lat: 22.3072, lon: 73.1812 },
+  { name: 'Ludhiana', lat: 30.9010, lon: 75.8573 }
+];
+
+// Calculate distance between two coordinates (Haversine formula)
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 const HomePage = () => {
   const navigate = useNavigate();
   const [weatherData, setWeatherData] = useState(null);
@@ -53,17 +90,39 @@ const HomePage = () => {
   const [aqiHistory, setAqiHistory] = useState([]);
   const [multipleCitiesAQI, setMultipleCitiesAQI] = useState([]);
 
+  // Get nearby cities based on coordinates
+  const getNearbyCities = useCallback((latitude, longitude, count = 7) => {
+    const citiesWithDistance = indianCities.map(city => ({
+      ...city,
+      distance: calculateDistance(latitude, longitude, city.lat, city.lon)
+    }));
+    
+    // Sort by distance and return top cities
+    return citiesWithDistance
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, count)
+      .map(city => city.name);
+  }, []);
+
   // Function to handle location change from Header
-  const handleLocationChange = (location) => {
+  const handleLocationChange = (location, coordinates) => {
     setSelectedLocation(location);
-    fetchAllData(location);
+    fetchAllData(location, coordinates);
   };
 
-  const fetchAllData = async (location) => {
+  const fetchAllData = useCallback(async (location, coordinates) => {
     setLoading(true);
     try {
       // Extract city name from "City, State" format
       const cityName = location.split(',')[0].trim();
+      
+      // Determine which cities to fetch for multi-city AQI
+      let citiesToFetch = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune'];
+      
+      // If coordinates are provided, get nearby cities
+      if (coordinates && coordinates.latitude && coordinates.longitude) {
+        citiesToFetch = getNearbyCities(coordinates.latitude, coordinates.longitude, 7);
+      }
       
       // Fetch all data in parallel
       const [weather, forecast, aqi, aqiHist, multiCityAQI] = await Promise.all([
@@ -71,7 +130,7 @@ const HomePage = () => {
         weatherService.getForecast(cityName, 7),
         aqiService.getAirQuality(cityName),
         aqiService.getAQIHistory(cityName, 7),
-        aqiService.getMultipleCitiesAQI(['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune'])
+        aqiService.getMultipleCitiesAQI(citiesToFetch)
       ]);
       
       setWeatherData(weather);
@@ -108,11 +167,11 @@ const HomePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getNearbyCities]);
 
   useEffect(() => {
     fetchAllData(selectedLocation);
-  }, [selectedLocation]);
+  }, [selectedLocation, fetchAllData]);
 
   const handleCitySelectFromMap = (cityName) => {
     const locationString = `${cityName}, India`;
@@ -254,8 +313,8 @@ const HomePage = () => {
                 {aqiHistory.length > 0 && (
                   <div className="mb-6">
                     <h4 className="mb-3 text-sm font-semibold text-white">Recent History</h4>
-                    <div className="grid grid-cols-3 gap-2">
-                      {aqiHistory.slice(0, 6).map((item, index) => (
+                    <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                      {aqiHistory.map((item, index) => (
                         <div key={index} className="p-2 text-center bg-gray-800 rounded">
                           <div className="text-xs text-gray-400">
                             {new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' })}
@@ -694,10 +753,10 @@ const HomePage = () => {
 
                     {/* 7-Day Forecast */}
                     <div className="p-4 bg-black/30 backdrop-blur-sm rounded-xl border border-white/10">
-                      <div className="mb-3 text-sm font-semibold text-white">7-Day Forecast</div>
+                      <div className="mb-3 text-sm font-semibold text-white">Weather Forecast</div>
                       {forecastData?.daily ? (
-                        <div className="grid grid-cols-7 gap-2">
-                          {forecastData.daily.slice(0, 7).map((item, index) => {
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 max-h-96 overflow-y-auto">
+                          {forecastData.daily.map((item, index) => {
                             const IconComponent = getIconComponent(item.icon);
                             return (
                               <div key={index} className="p-2 text-center transition-all duration-300 border rounded-lg cursor-pointer bg-white/5 hover:bg-white/15 hover:scale-105 border-white/10 hover:border-white/30">
@@ -727,225 +786,140 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Bottom Row - Heat Wave Alert Map (full width) */}
+            {/* Bottom Row - Environmental Map (full width) */}
             <div className="w-full">
-              <div 
-                className="relative p-4 overflow-hidden transition-all duration-500 border-2 bg-gradient-to-br from-red-900/95 via-orange-800/90 to-yellow-700/85 rounded-3xl border-orange-500/30 backdrop-blur-xl hover:shadow-2xl hover:shadow-red-900/40 group cursor-pointer hover:scale-[1.01] transform"
-                style={{
-                  boxShadow: '0 0 40px rgba(239, 68, 68, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.1)',
-                  background: 'linear-gradient(135deg, rgba(127, 29, 29, 0.95) 0%, rgba(194, 65, 12, 0.9) 50%, rgba(161, 98, 7, 0.85) 100%)'
-                }}
-                onClick={() => navigate('/heatwave')}
+              <div className="relative p-8 overflow-hidden transition-all duration-500 border bg-gradient-to-br from-orange-800/90 via-red-800/80 to-red-900/90 rounded-3xl border-orange-600/50 backdrop-blur-xl hover:shadow-2xl hover:shadow-orange-900/30 group"
+                   style={{
+                     boxShadow: '0 0 30px rgba(249, 115, 22, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                   }}
               >
-                {/* Enhanced Header */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-br from-red-500/30 to-orange-500/20 rounded-xl backdrop-blur-sm border border-red-400/20 shadow-lg">
-                      <svg className="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                    <div className="p-2 bg-red-500/20 rounded-xl">
+                      <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 01.553-.894L9 2l6 3 5.447-2.724A1 1 0 0121 3.382v10.764a1 1 0 01-.553.894L15 18l-6-3z" />
                       </svg>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold tracking-tight text-white drop-shadow-lg">Heat Wave Alert Map</h3>
-                      <p className="text-sm text-red-200/80 drop-shadow-sm">Real-time heat monitoring across India</p>
-                    </div>
+                    <h3 className="text-xl font-bold tracking-tight text-white">Environmental Map</h3>
                   </div>
-                  <div className="flex space-x-3">
-                    <div className="px-3 py-1.5 bg-gradient-to-r from-red-500/30 to-red-600/20 text-red-200 text-sm font-semibold rounded-full border border-red-400/30 backdrop-blur-sm shadow-lg hover:scale-105 transition-transform">
-                      Heat Wave
+                  <div className="flex space-x-2">
+                    <div className="px-3 py-1.5 bg-red-500/20 text-red-300 text-xs font-medium rounded-full border border-red-500/30">
+                      Heat Alert
                     </div>
-                    <div className="px-3 py-1.5 bg-gradient-to-r from-blue-500/30 to-blue-600/20 text-blue-200 text-sm font-semibold rounded-full border border-blue-400/30 backdrop-blur-sm shadow-lg hover:scale-105 transition-transform">
-                      AQI Layer
+                    <div className="px-3 py-1.5 bg-blue-500/20 text-blue-300 text-xs font-medium rounded-full border border-blue-500/30">
+                      AQI Live
                     </div>
                   </div>
                 </div>
                 
-                {/* Beautiful Heat Wave Map Visualization */}
-                <div className="relative h-48 mb-4 overflow-hidden rounded-2xl shadow-2xl border border-white/10" 
-                     style={{
-                       background: 'linear-gradient(135deg, #fbbf24 0%, #f97316 25%, #dc2626 50%, #7f1d1d 75%, #450a0a 100%)'
-                     }}>
-                  
-                  {/* Subtle heat wave effects - reduced animation */}
-                  <div className="absolute inset-0">
-                    <div className="absolute top-8 left-12 w-32 h-32 bg-red-500/30 rounded-full blur-3xl opacity-60"></div>
-                    <div className="absolute top-16 right-20 w-40 h-40 bg-orange-400/25 rounded-full blur-3xl opacity-50"></div>
-                    <div className="absolute bottom-12 left-1/4 w-36 h-36 bg-yellow-400/20 rounded-full blur-3xl opacity-40"></div>
-                    <div className="absolute top-12 left-1/2 w-28 h-28 bg-red-600/35 rounded-full blur-2xl opacity-55"></div>
-                    <div className="absolute bottom-16 right-12 w-44 h-44 bg-orange-500/25 rounded-full blur-3xl opacity-45"></div>
-                  </div>
-                  
-                  {/* Subtle flowing heat patterns - removed excessive animation */}
-                  <div className="absolute inset-0 opacity-20">
-                    <div className="absolute w-full h-full bg-gradient-to-r from-transparent via-red-400/15 to-transparent transform -skew-x-12"></div>
-                    <div className="absolute w-full h-full bg-gradient-to-l from-transparent via-orange-400/10 to-transparent transform skew-x-12"></div>
-                  </div>
-                  
-                  {/* Enhanced city temperature markers */}
-                  {multipleCitiesAQI.slice(0, 8).map((cityData, index) => {
+                {/* Real Heat Map Visualization - Enhanced for full width */}
+                <div className="relative h-64 mb-4 overflow-hidden bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 rounded-xl">
+                  {/* Real temperature markers from multiple cities */}
+                  {multipleCitiesAQI.map((cityData, index) => {
+                    // Generate dynamic positions for all cities
                     const positions = [
-                      { top: '18%', left: '15%', city: 'Delhi' },
-                      { top: '28%', left: '25%', city: 'Jaipur' },
-                      { top: '22%', left: '45%', city: 'Lucknow' },
-                      { top: '35%', left: '18%', city: 'Ahmedabad' },
-                      { bottom: '32%', left: '22%', city: 'Mumbai' },
-                      { bottom: '28%', left: '48%', city: 'Bangalore' },
-                      { top: '32%', left: '68%', city: 'Bhubaneswar' },
-                      { bottom: '38%', left: '72%', city: 'Chennai' }
+                      { top: '20%', left: '15%' },
+                      { top: '15%', left: '30%' },
+                      { top: '25%', left: '50%' },
+                      { top: '10%', left: '70%' },
+                      { bottom: '30%', left: '25%' },
+                      { bottom: '20%', left: '60%' },
+                      { bottom: '35%', left: '80%' },
+                      { top: '40%', left: '10%' },
+                      { top: '35%', left: '40%' },
+                      { top: '45%', left: '65%' },
+                      { bottom: '45%', left: '15%' },
+                      { bottom: '40%', left: '45%' },
+                      { bottom: '50%', left: '75%' },
+                      { top: '50%', left: '20%' },
+                      { top: '55%', left: '55%' }
                     ];
-                    const position = positions[index] || positions[0];
+                    // Cycle through positions if more cities than positions
+                    const position = positions[index % positions.length];
                     
-                    const heatLevel = Math.min(Math.max(cityData.aqi / 2 + 25, 30), 52);
-                    const isExtreme = heatLevel > 45;
-                    const isHigh = heatLevel > 40;
-                    const isModerate = heatLevel > 35;
+                    // Get temperature color based on AQI level
+                    const tempColor = cityData.aqi > 100 ? 'bg-red-500' : 
+                                     cityData.aqi > 75 ? 'bg-orange-400' : 
+                                     'bg-yellow-400';
+                    const textColor = cityData.aqi > 75 ? 'text-white' : 'text-black';
                     
                     return (
                       <div 
                         key={index}
-                        className="absolute group transition-all duration-300 hover:scale-110 cursor-pointer"
-                        style={{ top: position.top, left: position.left }}
-                        title={`${position.city}: ${Math.round(heatLevel)}°C Heat Index`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCitySelectFromMap(cityData.city);
-                        }}
+                        className={`absolute w-12 h-12 ${tempColor} rounded-full flex items-center justify-center ${textColor} font-bold text-xs shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer`}
+                        style={position}
+                        title={`${cityData.city}: AQI ${cityData.aqi}`}
+                        onClick={() => handleCitySelectFromMap(cityData.city)}
                       >
-                        {/* Subtle glow effect - only for extreme heat, no blinking */}
-                        {isExtreme && (
-                          <div className="absolute inset-0 w-16 h-16 rounded-full" 
-                               style={{ 
-                                 backgroundColor: 'rgba(220, 38, 38, 0.2)',
-                                 boxShadow: '0 0 20px rgba(220, 38, 38, 0.4)'
-                               }}>
-                          </div>
-                        )}
-                        
-                        {/* Main marker - removed excessive animations */}
-                        <div 
-                          className="relative w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-2xl border-2 border-white/50 backdrop-blur-sm transition-all duration-300 hover:shadow-3xl"
-                          style={{ 
-                            background: isExtreme ? 'linear-gradient(135deg, #dc2626, #7f1d1d)' : 
-                                       isHigh ? 'linear-gradient(135deg, #ea580c, #c2410c)' : 
-                                       isModerate ? 'linear-gradient(135deg, #eab308, #a16207)' : 'linear-gradient(135deg, #22c55e, #16a34a)',
-                            boxShadow: `0 8px 32px ${isExtreme ? 'rgba(220, 38, 38, 0.3)' : isHigh ? 'rgba(234, 88, 12, 0.3)' : 'rgba(234, 179, 8, 0.3)'}`
-                          }}
-                        >
-                          <div className="text-center">
-                            <div className="text-sm leading-none font-bold drop-shadow-lg">{Math.round(heatLevel)}°</div>
-                            <div className="text-xs font-normal leading-none opacity-90 drop-shadow-md">{position.city.slice(0,3)}</div>
-                          </div>
-                        </div>
-                        
-                        {/* Improved tooltip */}
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-black/90 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap backdrop-blur-sm border border-white/20">
-                          {position.city}: {Math.round(heatLevel)}°C
-                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/90"></div>
+                        <div className="text-center">
+                          <div className="text-xs leading-none">{cityData.aqi}</div>
+                          <div className="text-xs font-normal leading-none">{cityData.city.slice(0,3)}</div>
                         </div>
                       </div>
                     );
                   })}
                   
-                  {/* Enhanced current location marker - reduced blinking */}
-                  <div className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 group">
-                    {/* Single subtle pulse ring - much slower */}
-                    <div className="absolute inset-0 w-24 h-24 rounded-full border-2 border-white/30 animate-ping" style={{ animationDuration: '3s' }}></div>
-                    
-                    {/* Main location marker */}
+                  {/* Current location marker - centered */}
+                  <div className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
                     <div 
-                      className="relative w-20 h-20 rounded-full flex items-center justify-center text-white font-bold border-3 border-white shadow-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105"
-                      style={{ 
-                        background: (aqiData?.aqi > 100) ? 'linear-gradient(135deg, #dc2626, #7f1d1d)' : 
-                                   (aqiData?.aqi > 75) ? 'linear-gradient(135deg, #ea580c, #c2410c)' : 'linear-gradient(135deg, #eab308, #a16207)',
-                        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.2)'
-                      }}
+                      className="flex items-center justify-center w-16 h-16 text-sm font-bold border-4 border-white rounded-full shadow-lg animate-pulse"
+                      style={{ backgroundColor: aqiData?.color || '#F59E0B' }}
                     >
-                      <div className="text-center">
-                        <div className="text-lg leading-none font-bold drop-shadow-lg">{Math.round((aqiData?.aqi || 64) / 2 + 30)}°</div>
-                        <div className="text-xs leading-none opacity-90 drop-shadow-md">YOU</div>
-                        <div className="text-xs leading-none opacity-75 drop-shadow-sm">{selectedLocation.split(',')[0].slice(0,4)}</div>
+                      <div className="text-center text-white">
+                        <div className="text-sm leading-none">{aqiData?.aqi || 64}</div>
+                        <div className="text-xs leading-none">AQI</div>
+                        <div className="text-xs leading-none">{selectedLocation.split(',')[0].slice(0,3)}</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Refined overlay gradients */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/3 to-transparent"></div>
+                  {/* Enhanced gradient overlay for better visual */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/10 to-transparent"></div>
                 </div>
 
-                {/* Enhanced Information Cards */}
+                {/* Enhanced Heat Alert Levels - Better layout for full width */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="p-4 bg-gradient-to-br from-black/50 to-black/30 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-white/20">
-                    <div className="mb-3 text-sm text-orange-200 font-semibold flex items-center">
-                      <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
-                      Heat Alert Levels
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-green-500 rounded-full shadow-lg"></div>
-                          <span className="text-sm text-white font-medium">Caution</span>
-                        </div>
-                        <span className="text-xs text-gray-300 font-mono bg-black/20 px-2 py-1 rounded">27-32°C</span>
+                  <div className="p-4 bg-black/20 rounded-xl">
+                    <div className="mb-2 text-xs text-orange-200">Heat Alert Levels</div>
+                    <div className="flex items-center justify-between space-x-4">
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                        <span className="text-xs text-white">Caution</span>
                       </div>
-                      <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-3 h-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full shadow-lg"></div>
-                          <span className="text-sm text-white font-medium">Warning</span>
-                        </div>
-                        <span className="text-xs text-gray-300 font-mono bg-black/20 px-2 py-1 rounded">32-39°C</span>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                        <span className="text-xs text-white">Warning</span>
                       </div>
-                      <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-3 h-3 bg-gradient-to-r from-red-400 to-red-500 rounded-full shadow-lg"></div>
-                          <span className="text-sm text-white font-medium">Danger</span>
-                        </div>
-                        <span className="text-xs text-gray-300 font-mono bg-black/20 px-2 py-1 rounded">39°C+</span>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                        <span className="text-xs text-white">Danger</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="p-4 bg-gradient-to-br from-black/50 to-black/30 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-white/20">
-                    <div className="mb-3 text-sm text-blue-200 font-semibold flex items-center">
-                      <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
-                      Current Conditions
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
-                        <span className="text-sm text-gray-300">Heat Index:</span>
-                        <span className="text-lg font-bold text-orange-300 drop-shadow-lg">{Math.round((aqiData?.aqi || 64) / 2 + 30)}°C</span>
+                  <div className="p-4 bg-black/20 rounded-xl">
+                    <div className="mb-2 text-xs text-blue-200">AQI Categories</div>
+                    <div className="flex items-center justify-between space-x-2">
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                        <span className="text-xs text-white">Good</span>
                       </div>
-                      <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
-                        <span className="text-sm text-gray-300">Risk Level:</span>
-                        <span className={`text-sm font-bold px-2 py-1 rounded-full border ${(aqiData?.aqi > 100) ? 'text-red-300 bg-red-500/20 border-red-500/30' : (aqiData?.aqi > 75) ? 'text-orange-300 bg-orange-500/20 border-orange-500/30' : 'text-yellow-300 bg-yellow-500/20 border-yellow-500/30'}`}>
-                          {(aqiData?.aqi > 100) ? 'High' : (aqiData?.aqi > 75) ? 'Moderate' : 'Low'}
-                        </span>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                        <span className="text-xs text-white">Moderate</span>
                       </div>
-                      <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
-                        <span className="text-sm text-gray-300">Location:</span>
-                        <span className="text-sm text-white font-medium">{selectedLocation.split(',')[0]}</span>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                        <span className="text-xs text-white">Unhealthy</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="p-4 bg-gradient-to-br from-black/50 to-black/30 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-white/20">
-                    <div className="mb-3 text-sm text-purple-200 font-semibold flex items-center">
-                      <span className="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>
-                      Live Updates
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
-                        <span className="text-sm text-gray-300">Last Updated:</span>
-                        <span className="text-sm text-green-400 font-mono bg-green-500/10 px-2 py-1 rounded">{new Date().toLocaleTimeString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
-                        <span className="text-sm text-gray-300">Active Alerts:</span>
-                        <span className="text-lg font-bold text-orange-400">{multipleCitiesAQI.filter(city => city.aqi > 75).length}</span>
-                      </div>
-                      <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
-                        <span className="text-sm text-gray-300">Monitored Cities:</span>
-                        <span className="text-lg font-bold text-blue-400">{multipleCitiesAQI.length}</span>
-                      </div>
+                  <div className="p-4 bg-black/20 rounded-xl">
+                    <div className="mb-2 text-xs text-purple-200">Live Updates</div>
+                    <div className="text-sm text-white">
+                      <div className="text-xs">Last Updated: {new Date().toLocaleTimeString()}</div>
+                      <div className="text-xs">Active Cities: {multipleCitiesAQI.length}</div>
                     </div>
                   </div>
                 </div>

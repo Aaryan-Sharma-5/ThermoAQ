@@ -9,6 +9,7 @@ import DistrictAnalytics from "./pages/DistrictAnalytics";
 import HealthAdvisory from "./pages/HealthAdvisory";
 import HeatWaveMap from "./pages/HeatWaveMap";
 import HomePage from "./pages/HomePage";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -24,6 +25,11 @@ function App() {
             <Route path="/advanced" element={
               <ProtectedRoute>
                 <AdvancedFeatures />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             } />
             <Route path="/login" element={<LoginForm />} />

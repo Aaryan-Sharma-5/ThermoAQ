@@ -133,7 +133,12 @@ export function DistrictComparison({ location }) {
           </button>
           
           {isOpen && (
-            <div className="absolute top-full right-0 mt-2 bg-slate-800 rounded-lg shadow-xl overflow-hidden z-50 min-w-[280px] max-h-64 overflow-y-auto border border-slate-600">
+            <div className="absolute top-full right-0 mt-2 bg-slate-800 rounded-lg shadow-xl overflow-hidden z-50 min-w-[280px] max-h-80 overflow-y-auto border border-slate-600 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+              <div className="sticky top-0 bg-slate-700 px-4 py-2 border-b border-slate-600 z-10">
+                <p className="text-xs text-slate-300">
+                  {districts.filter(district => district !== location).length} districts available - scroll to see all
+                </p>
+              </div>
               {districts.filter(district => district !== location).map((district) => (
                 <button
                   key={district}

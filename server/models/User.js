@@ -54,8 +54,37 @@ const userSchema = new mongoose.Schema({
     defaultLocation: {
       type: String,
       default: 'Mumbai, Maharashtra'
+    },
+    aqiAlertThreshold: {
+      type: Number,
+      default: 150 // Alert when AQI exceeds this value
+    },
+    enableAlerts: {
+      type: Boolean,
+      default: true
+    },
+    healthConditions: {
+      type: [String], // asthma, respiratory, heart, etc.
+      default: []
     }
-  }
+  },
+  monitoredLocations: [{
+    name: String,
+    addedAt: { type: Date, default: Date.now },
+    alertEnabled: { type: Boolean, default: true }
+  }],
+  aqiHistory: [{
+    location: String,
+    aqi: Number,
+    timestamp: { type: Date, default: Date.now }
+  }],
+  alerts: [{
+    location: String,
+    aqi: Number,
+    message: String,
+    isRead: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+  }]
 }, {
   timestamps: true
 });

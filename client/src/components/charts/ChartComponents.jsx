@@ -468,11 +468,11 @@ export const WeatherForecastChart = ({ forecastData, className = "" }) => {
   if (!forecastData?.daily) return null;
 
   const chartData = {
-    labels: forecastData.daily.slice(0, 7).map(day => day.day),
+    labels: forecastData.daily.map(day => day.day),
     datasets: [
       {
         label: 'High Temp',
-        data: forecastData.daily.slice(0, 7).map(day => day.high),
+        data: forecastData.daily.map(day => day.high),
         borderColor: '#F97316',
         backgroundColor: 'rgba(249, 115, 22, 0.1)',
         borderWidth: 2,
@@ -480,7 +480,7 @@ export const WeatherForecastChart = ({ forecastData, className = "" }) => {
       },
       {
         label: 'Low Temp',
-        data: forecastData.daily.slice(0, 7).map(day => day.low),
+        data: forecastData.daily.map(day => day.low),
         borderColor: '#3B82F6',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         borderWidth: 2,

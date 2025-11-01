@@ -48,6 +48,51 @@ export const Header = ({ onLocationChange, onRefresh }) => {
   const cityDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
 
+  // Request user location when logged in
+  useEffect(() => {
+    if (user) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            
+            try {
+              // Reverse geocoding to get city name
+              const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+              );
+              const data = await response.json();
+              
+              const city = data.address.city || data.address.town || data.address.village || 'Mumbai';
+              const state = data.address.state || 'Maharashtra';
+              const detectedCity = `${city}, ${state}`;
+              
+              // Update selected city with detected location
+              setSelectedCity(detectedCity);
+              if (onLocationChange) {
+                // Pass the detected city along with coordinates for nearby cities detection
+                onLocationChange(detectedCity, { latitude, longitude });
+              }
+            } catch (err) {
+              console.error('Reverse geocoding failed:', err);
+              // Stay at default Mumbai
+            }
+          },
+          (err) => {
+            console.error('Geolocation error:', err);
+            // Stay at default Mumbai if permission denied or error
+          }
+        );
+      }
+    } else {
+      // Reset to Mumbai when logged out
+      setSelectedCity("Mumbai, Maharashtra");
+      if (onLocationChange) {
+        onLocationChange("Mumbai, Maharashtra");
+      }
+    }
+  }, [user, onLocationChange]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -158,44 +203,46 @@ export const Header = ({ onLocationChange, onRefresh }) => {
             </button>
           )}
 
-          {/* City Dropdown */}
-          <div className="relative" ref={cityDropdownRef}>
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center px-4 py-2 space-x-2 text-white transition-colors border rounded-lg bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
-            >
-              <MapPin size={18} className="text-blue-400" />
-              <span className="text-sm font-medium">{selectedCity}</span>
-              <ChevronDown
-                size={16}
-                className={`transition-transform ${
-                  isDropdownOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+          {/* City Dropdown - Only show when logged in */}
+          {user && (
+            <div className="relative" ref={cityDropdownRef}>
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center px-4 py-2 space-x-2 text-white transition-colors border rounded-lg bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
+              >
+                <MapPin size={18} className="text-blue-400" />
+                <span className="text-sm font-medium">{selectedCity}</span>
+                <ChevronDown
+                  size={16}
+                  className={`transition-transform ${
+                    isDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-            {isDropdownOpen && (
-              <div className="absolute z-[60] w-64 mt-2 border rounded-lg shadow-xl top-full bg-slate-800/95 backdrop-blur-sm border-white/20">
-                <div className="overflow-y-auto max-h-60">
-                  {indianCities.map((city) => (
-                    <button
-                      key={city}
-                      onClick={() => {
-                        setSelectedCity(city);
-                        setIsDropdownOpen(false);
-                        if (onLocationChange) {
-                          onLocationChange(city);
-                        }
-                      }}
-                      className="w-full px-4 py-2 text-left text-white transition-colors border-b hover:bg-white/10 border-white/10 last:border-b-0"
-                    >
-                      {city}
-                    </button>
-                  ))}
+              {isDropdownOpen && (
+                <div className="absolute z-[60] w-64 mt-2 border rounded-lg shadow-xl top-full bg-slate-800/95 backdrop-blur-sm border-white/20">
+                  <div className="overflow-y-auto max-h-60">
+                    {indianCities.map((city) => (
+                      <button
+                        key={city}
+                        onClick={() => {
+                          setSelectedCity(city);
+                          setIsDropdownOpen(false);
+                          if (onLocationChange) {
+                            onLocationChange(city);
+                          }
+                        }}
+                        className="w-full px-4 py-2 text-left text-white transition-colors border-b hover:bg-white/10 border-white/10 last:border-b-0"
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* User Section */}
           {user ? (
@@ -219,6 +266,7 @@ export const Header = ({ onLocationChange, onRefresh }) => {
                   <div className="py-2">
                     <button
                       onClick={() => {
+                        navigate('/profile');
                         setIsUserDropdownOpen(false);
                       }}
                       className="flex items-center w-full px-4 py-2 space-x-2 text-left text-white transition-colors hover:bg-white/10"
@@ -333,63 +381,65 @@ export const Header = ({ onLocationChange, onRefresh }) => {
               </button>
             </nav>
 
-            {/* Mobile City Selector */}
-            <div className="pt-2 border-t border-white/10">
-              {/* Refresh Button for Mobile */}
-              {onRefresh && (
-                <button
-                  onClick={() => {
-                    onRefresh();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="flex items-center justify-center w-full px-4 py-3 mb-3 space-x-2 text-white transition-colors border rounded-lg border-white/20 hover:bg-white/10"
-                >
-                  <RefreshCw size={18} />
-                  <span className="font-medium">Refresh Data</span>
-                </button>
-              )}
-
-              <div className="relative" ref={cityDropdownRef}>
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center justify-between w-full px-4 py-3 text-white transition-colors border rounded-lg bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
-                >
-                  <div className="flex items-center space-x-2">
-                    <MapPin size={18} className="text-blue-400" />
-                    <span className="text-sm font-medium">{selectedCity}</span>
-                  </div>
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {isDropdownOpen && (
-                  <div className="z-[60] w-full mt-2 border rounded-lg shadow-xl bg-slate-800/95 backdrop-blur-sm border-white/20">
-                    <div className="overflow-y-auto max-h-60">
-                      {indianCities.map((city) => (
-                        <button
-                          key={city}
-                          onClick={() => {
-                            setSelectedCity(city);
-                            setIsDropdownOpen(false);
-                            setIsMobileMenuOpen(false);
-                            if (onLocationChange) {
-                              onLocationChange(city);
-                            }
-                          }}
-                          className="w-full px-4 py-2 text-left text-white transition-colors border-b hover:bg-white/10 border-white/10 last:border-b-0"
-                        >
-                          {city}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+            {/* Mobile City Selector - Only show when logged in */}
+            {user && (
+              <div className="pt-2 border-t border-white/10">
+                {/* Refresh Button for Mobile */}
+                {onRefresh && (
+                  <button
+                    onClick={() => {
+                      onRefresh();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center w-full px-4 py-3 mb-3 space-x-2 text-white transition-colors border rounded-lg border-white/20 hover:bg-white/10"
+                  >
+                    <RefreshCw size={18} />
+                    <span className="font-medium">Refresh Data</span>
+                  </button>
                 )}
+
+                <div className="relative" ref={cityDropdownRef}>
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center justify-between w-full px-4 py-3 text-white transition-colors border rounded-lg bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <MapPin size={18} className="text-blue-400" />
+                      <span className="text-sm font-medium">{selectedCity}</span>
+                    </div>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform ${
+                        isDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="z-[60] w-full mt-2 border rounded-lg shadow-xl bg-slate-800/95 backdrop-blur-sm border-white/20">
+                      <div className="overflow-y-auto max-h-60">
+                        {indianCities.map((city) => (
+                          <button
+                            key={city}
+                            onClick={() => {
+                              setSelectedCity(city);
+                              setIsDropdownOpen(false);
+                              setIsMobileMenuOpen(false);
+                              if (onLocationChange) {
+                                onLocationChange(city);
+                              }
+                            }}
+                            className="w-full px-4 py-2 text-left text-white transition-colors border-b hover:bg-white/10 border-white/10 last:border-b-0"
+                          >
+                            {city}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Mobile User Section */}
             <div className="pt-2 border-t border-white/10">
@@ -401,6 +451,7 @@ export const Header = ({ onLocationChange, onRefresh }) => {
                   </div>
                   <button
                     onClick={() => {
+                      navigate('/profile');
                       setIsMobileMenuOpen(false);
                     }}
                     className="flex items-center w-full px-4 py-3 space-x-2 text-left text-white transition-colors rounded-lg hover:bg-white/10"

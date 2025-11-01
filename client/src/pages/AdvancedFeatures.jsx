@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Header } from '../layout/Header';
-import { ExportShareFeatures } from '../components/features/ExportShareFeatures';
-import { FavoriteLocations } from '../components/features/FavoriteLocations';
+import { MultiLocationMonitor } from '../components/features/MultiLocationMonitor';
+import { AQIAlerts } from '../components/features/AQIAlerts';
+import { PollutionHistory } from '../components/features/PollutionHistory';
+import { HealthRecommendations } from '../components/features/HealthRecommendations';
+import { ReportDownload } from '../components/features/ReportDownload';
 import { HourlyTemperatureGraph } from '../components/charts/HourlyTemperatureGraph';
 import { PollutantBreakdownDetailed } from '../components/charts/PollutantBreakdownDetailed';
 import { SunMoonTimeline } from '../components/charts/SunMoonTimeline';
@@ -61,64 +64,56 @@ export function AdvancedFeatures() {
     fetchData();
   }, [selectedLocation]);
 
-  const handleLocationSelect = (location) => {
-    setSelectedLocation(location);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Header onLocationChange={setSelectedLocation} />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container px-4 py-8 mx-auto">
         {/* Welcome Banner with User Info */}
-        <div className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 shadow-xl">
+        <div className="p-6 mb-8 shadow-xl bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">
+              <h2 className="mb-2 text-2xl font-bold text-white">
                 Welcome back, {user?.name || 'User'}! 👋
               </h2>
               <p className="text-blue-100">
                 Your current location: <span className="font-semibold">{selectedLocation}</span>
               </p>
-              <p className="text-sm text-blue-200 mt-1">
+              <p className="mt-1 text-sm text-blue-200">
                 {userLocation?.lastUpdated 
                   ? `Last updated: ${new Date(userLocation.lastUpdated).toLocaleString()}`
                   : 'Location auto-detected on login'}
               </p>
-            </div>
-            <div className="text-right">
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-                <p className="text-xs text-white mb-1">Premium Features Unlocked</p>
-                <p className="text-2xl font-bold text-white">✨</p>
-              </div>
             </div>
           </div>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center h-96">
-            <div className="text-white text-xl">Loading advanced features...</div>
+            <div className="text-xl text-white">Loading advanced features...</div>
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Row 1: Favorite Locations & Export/Share */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <FavoriteLocations
-                onLocationSelect={handleLocationSelect}
-                currentLocation={selectedLocation}
-              />
-              <ExportShareFeatures
-                weatherData={weatherData}
-                aqiData={aqiData}
-                locationName={selectedLocation}
-              />
+            {/* Row 1: Multi-Location Monitor & AQI Alerts */}
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+              <MultiLocationMonitor />
+              <AQIAlerts />
             </div>
 
-            {/* Row 2: Hourly Temperature Graph */}
+            {/* Row 2: Pollution History & Health Recommendations */}
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+              <PollutionHistory />
+              <HealthRecommendations />
+            </div>
+
+            {/* Row 3: Download Report */}
+            <ReportDownload />
+
+            {/* Row 4: Hourly Temperature Graph */}
             <HourlyTemperatureGraph hourlyData={forecastData?.hourly} />
 
-            {/* Row 3: Advanced Visualizations */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Row 5: Advanced Visualizations */}
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
               <WindCompass
                 windSpeed={weatherData?.windSpeed || 0}
                 windDirection={weatherData?.windDirection || 0}
@@ -132,51 +127,8 @@ export function AdvancedFeatures() {
               />
             </div>
 
-            {/* Row 4: Detailed Pollutant Breakdown */}
+            {/* Row 6: Detailed Pollutant Breakdown */}
             <PollutantBreakdownDetailed pollutants={aqiData?.pollutants || {}} />
-
-            {/* Info Section */}
-            <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl p-8 border border-blue-500/30">
-              <h2 className="text-2xl font-bold text-white mb-4">About Advanced Features</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-300">
-                <div>
-                  <h3 className="font-semibold text-blue-400 mb-2">📊 Data Visualizations</h3>
-                  <ul className="space-y-1 text-sm">
-                    <li>• 24-hour temperature trends with precipitation</li>
-                    <li>• Wind direction compass with speed categories</li>
-                    <li>• UV index gauge with health recommendations</li>
-                    <li>• Sunrise/sunset timeline with moon phases</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-green-400 mb-2">🌍 Location Features</h3>
-                  <ul className="space-y-1 text-sm">
-                    <li>• Auto-detect location with geolocation</li>
-                    <li>• Save favorite locations for quick access</li>
-                    <li>• Compare weather across multiple cities</li>
-                    <li>• Set current location for personalized data</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-purple-400 mb-2">💨 Air Quality Analysis</h3>
-                  <ul className="space-y-1 text-sm">
-                    <li>• Detailed pollutant breakdown (PM2.5, PM10, O₃, etc.)</li>
-                    <li>• Health recommendations by AQI level</li>
-                    <li>• Pollutant sources and health effects</li>
-                    <li>• Sensitive group advisories</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-orange-400 mb-2">📤 Export & Share</h3>
-                  <ul className="space-y-1 text-sm">
-                    <li>• Export weather reports as PDF</li>
-                    <li>• Download historical data as CSV</li>
-                    <li>• Share on Twitter, Facebook, LinkedIn</li>
-                    <li>• Native share API support</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
           </div>
         )}
       </main>

@@ -87,7 +87,40 @@ export const authAPI = {
   
   // Update user preferences
   updateUserPreferences: async (preferences) => {
-    const response = await api.post('/user/preferences', preferences);
+    const response = await api.put('/user/preferences', preferences);
+    return response.data;
+  },
+  
+  // Monitored Locations
+  addMonitoredLocation: async (locationData) => {
+    const response = await api.post('/user/monitored-locations', locationData);
+    return response.data;
+  },
+  
+  removeMonitoredLocation: async (locationName) => {
+    const response = await api.delete(`/user/monitored-locations/${encodeURIComponent(locationName)}`);
+    return response.data;
+  },
+  
+  // AQI History
+  addAQIHistory: async (data) => {
+    const response = await api.post('/user/aqi-history', data);
+    return response.data;
+  },
+  
+  getAQIHistory: async () => {
+    const response = await api.get('/user/aqi-history');
+    return response.data;
+  },
+  
+  // Alerts
+  getAlerts: async () => {
+    const response = await api.get('/user/alerts');
+    return response.data;
+  },
+  
+  markAlertAsRead: async (alertId) => {
+    const response = await api.put(`/user/alerts/${alertId}/read`);
     return response.data;
   },
 };

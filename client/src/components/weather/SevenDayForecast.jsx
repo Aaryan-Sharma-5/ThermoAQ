@@ -52,7 +52,7 @@ export function SevenDayForecast({ forecastData }) {
   };
 
   // Use real forecast data only - no hardcoded fallback
-  const forecast = forecastData?.daily?.slice(0, 7).map((day) => ({
+  const forecast = forecastData?.daily?.map((day) => ({
     day: day.day,
     icon: getWeatherIcon(day.icon),
     high: day.high,
@@ -60,16 +60,11 @@ export function SevenDayForecast({ forecastData }) {
     condition: day.condition
   })) || [];
 
-  // Log for debugging
-  if (forecast.length > 0 && forecast.length < 7) {
-    console.log(`Only ${forecast.length} days available in forecast`);
-  }
-
   // Show loading state if no data
   if (forecast.length === 0) {
     return (
       <div className="bg-[#1e2430] rounded-2xl p-6">
-        <h3 className="mb-4 text-xl font-semibold">7-Day Forecast</h3>
+        <h3 className="mb-4 text-xl font-semibold">Weather Forecast</h3>
         <div className="grid grid-cols-7 gap-2">
           {[...Array(7)].map((_, i) => (
             <div key={i} className="bg-[#252d3d] rounded-xl p-4 text-center animate-pulse">
@@ -87,14 +82,14 @@ export function SevenDayForecast({ forecastData }) {
   return (
     <div className="bg-[#1e2430] rounded-2xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold">7-Day Forecast</h3>
-        {forecast.length > 0 && forecast.length < 7 && (
+        <h3 className="text-xl font-semibold">Weather Forecast</h3>
+        {forecast.length > 0 && (
           <span className="text-xs text-gray-500">
             Showing {forecast.length} {forecast.length === 1 ? 'day' : 'days'}
           </span>
         )}
       </div>
-      <div className="grid grid-cols-7 gap-3 overflow-x-auto">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 overflow-x-auto max-h-96 overflow-y-auto">
         {forecast.map((day, i) => (
           <div key={i} className="bg-[#252d3d] rounded-xl p-4 text-center hover:bg-[#2d3548] transition-colors min-w-[100px]">
             <p className="mb-2 text-sm font-medium text-gray-400">{day.day}</p>

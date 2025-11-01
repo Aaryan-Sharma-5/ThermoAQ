@@ -99,7 +99,7 @@ export function HealthAdvisory() {
       ]
     }
     
-    return forecastData.daily.slice(0, 6).map(day => ({
+    return forecastData.daily.map(day => ({
       temp: day.high,
       humidity: day.humidity || 65
     }))

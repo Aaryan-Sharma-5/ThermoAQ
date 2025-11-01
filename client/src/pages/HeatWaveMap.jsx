@@ -247,11 +247,11 @@ function MapView({ citiesData, temperatureData, isLoading }) {
   };
 
   return (
-    <div className="flex-1 relative">
+    <div className="relative flex-1">
       {isLoading && (
         <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-[1001] flex items-center justify-center">
-          <div className="bg-slate-800 p-6 rounded-lg flex items-center gap-3">
-            <LoaderIcon className="w-6 h-6 animate-spin text-orange-400" />
+          <div className="flex items-center gap-3 p-6 rounded-lg bg-slate-800">
+            <LoaderIcon className="w-6 h-6 text-orange-400 animate-spin" />
             <span className="text-white">Loading weather data...</span>
           </div>
         </div>
@@ -285,7 +285,7 @@ function MapView({ citiesData, temperatureData, isLoading }) {
             >
               <Popup className="custom-popup">
                 <div className="p-3 bg-slate-800 text-white rounded-lg min-w-[200px]">
-                  <div className="font-bold text-lg text-orange-400 mb-2">
+                  <div className="mb-2 text-lg font-bold text-orange-400">
                     {city.name}
                   </div>
                   <div className="space-y-2 text-sm">
@@ -322,22 +322,22 @@ function MapView({ citiesData, temperatureData, isLoading }) {
       {/* Heatmap Legend */}
       {showHeatmap && (
         <div className="absolute bottom-4 left-4 bg-slate-800/95 backdrop-blur-sm p-4 rounded-lg shadow-lg z-[1000] border border-slate-700">
-          <div className="text-white font-semibold mb-2 flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-2 font-semibold text-white">
             <ThermometerIcon className="w-4 h-4" />
             Temperature Scale
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-4 w-40 rounded" style={{
+            <div className="w-40 h-4 rounded" style={{
               background: 'linear-gradient(to right, #0000ff, #00ffff, #00ff00, #ffff00, #ffa500, #ff4500, #ff0000)'
             }}></div>
           </div>
-          <div className="flex justify-between text-xs text-gray-300 mt-1">
+          <div className="flex justify-between mt-1 text-xs text-gray-300">
             <span>15°C</span>
             <span>25°C</span>
             <span>35°C</span>
             <span>45°C+</span>
           </div>
-          <div className="mt-3 flex items-center gap-2">
+          <div className="flex items-center gap-2 mt-3">
             <label className="text-xs text-gray-300">Opacity:</label>
             <input
               type="range"
@@ -346,7 +346,7 @@ function MapView({ citiesData, temperatureData, isLoading }) {
               step="0.1"
               value={heatmapOpacity}
               onChange={(e) => setHeatmapOpacity(parseFloat(e.target.value))}
-              className="w-24 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
+              className="w-24 h-2 rounded-lg appearance-none cursor-pointer bg-slate-600"
             />
             <span className="text-xs text-gray-300">{Math.round(heatmapOpacity * 100)}%</span>
           </div>
@@ -354,15 +354,15 @@ function MapView({ citiesData, temperatureData, isLoading }) {
       )}
       
       {/* Map Controls */}
-      <div className="absolute top-20 right-2 lg:right-[calc(20rem+0.5rem)] xl:right-[calc(24rem+0.5rem)] flex flex-col gap-2 z-[1000]">
+      <div className="absolute flex flex-col gap-2 top-4 right-4 z-[1000]">
         <button
-          className="bg-slate-800/90 backdrop-blur-sm text-white p-3 rounded-lg hover:bg-slate-700 transition-all duration-200 shadow-lg"
+          className="p-3 text-white transition-all duration-200 rounded-lg shadow-lg bg-slate-800/90 backdrop-blur-sm hover:bg-slate-700"
           aria-label="Zoom in"
         >
           <PlusIcon className="w-5 h-5" />
         </button>
         <button
-          className="bg-slate-800/90 backdrop-blur-sm text-white p-3 rounded-lg hover:bg-slate-700 transition-all duration-200 shadow-lg"
+          className="p-3 text-white transition-all duration-200 rounded-lg shadow-lg bg-slate-800/90 backdrop-blur-sm hover:bg-slate-700"
           aria-label="Zoom out"
         >
           <MinusIcon className="w-5 h-5" />
@@ -400,24 +400,24 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
   };
 
   const LoadingCard = () => (
-    <div className="bg-slate-700 p-4 rounded-lg animate-pulse">
-      <div className="h-4 bg-slate-600 rounded mb-2"></div>
-      <div className="h-6 bg-slate-600 rounded mb-1"></div>
-      <div className="h-3 bg-slate-600 rounded"></div>
+    <div className="p-4 rounded-lg bg-slate-700 animate-pulse">
+      <div className="h-4 mb-2 rounded bg-slate-600"></div>
+      <div className="h-6 mb-1 rounded bg-slate-600"></div>
+      <div className="h-3 rounded bg-slate-600"></div>
     </div>
   );
 
   return (
     <aside
-      className="w-full lg:w-80 xl:w-96 bg-gradient-to-b from-slate-800 to-slate-900 p-4 md:p-6 space-y-6 overflow-y-auto border-l border-slate-700"
+      className="w-full p-4 space-y-6 overflow-y-auto border-l lg:w-80 xl:w-96 bg-gradient-to-b from-slate-800 to-slate-900 md:p-6 border-slate-700"
       role="region"
       aria-label="Environmental monitoring data"
     >
       {/* Highest AQI Districts */}
       <section className="space-y-4" aria-labelledby="aqi-heading">
-        <div className="flex items-center gap-3 text-orange-400 border-b border-slate-700 pb-2">
+        <div className="flex items-center gap-3 pb-2 text-orange-400 border-b border-slate-700">
           <AlertTriangleIcon className="w-6 h-6" />
-          <h2 id="aqi-heading" className="font-bold text-xl">
+          <h2 id="aqi-heading" className="text-xl font-bold">
             Air Quality Status
           </h2>
         </div>
@@ -426,17 +426,17 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
           {isLoading ? (
             Array(3).fill(0).map((_, i) => <LoadingCard key={i} />)
           ) : (
-            aqiData.slice(0, 5).map((city) => {
+            aqiData.slice(0, 3).map((city) => {
               const status = getAQIStatus(city.aqi);
               return (
                 <div 
                   key={city.city} 
-                  className="bg-slate-700/70 backdrop-blur-sm p-4 rounded-lg hover:bg-slate-600/70 transition-all duration-200 cursor-pointer border border-slate-600"
+                  className="p-4 transition-all duration-200 border rounded-lg cursor-pointer bg-slate-700/70 backdrop-blur-sm hover:bg-slate-600/70 border-slate-600"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="font-semibold text-white text-lg">{city.city}</div>
-                      <div className="text-sm text-gray-400 mt-1">
+                      <div className="text-lg font-semibold text-white">{city.city}</div>
+                      <div className="mt-1 text-sm text-gray-400">
                         PM2.5: {city.pollutants?.pm25 || 'N/A'} μg/m³
                       </div>
                     </div>
@@ -454,9 +454,9 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
 
       {/* Heat Alerts */}
       <section className="space-y-4" aria-labelledby="heat-heading">
-        <div className="flex items-center gap-3 text-orange-400 border-b border-slate-700 pb-2">
+        <div className="flex items-center gap-3 pb-2 text-orange-400 border-b border-slate-700">
           <ThermometerIcon className="w-6 h-6" />
-          <h2 id="heat-heading" className="font-bold text-xl">
+          <h2 id="heat-heading" className="text-xl font-bold">
             Temperature Alerts
           </h2>
         </div>
@@ -494,9 +494,9 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
 
       {/* Forecast Alerts */}
       <section className="space-y-4" aria-labelledby="forecast-heading">
-        <div className="flex items-center gap-3 text-blue-400 border-b border-slate-700 pb-2">
+        <div className="flex items-center gap-3 pb-2 text-blue-400 border-b border-slate-700">
           <CloudIcon className="w-6 h-6" />
-          <h2 id="forecast-heading" className="font-bold text-xl">
+          <h2 id="forecast-heading" className="text-xl font-bold">
             Weather Forecast
           </h2>
         </div>
@@ -510,18 +510,18 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
               return (
                 <div 
                   key={day.day} 
-                  className="bg-slate-700/70 backdrop-blur-sm p-4 rounded-lg hover:bg-slate-600/70 transition-all duration-200 cursor-pointer border border-slate-600"
+                  className="p-4 transition-all duration-200 border rounded-lg cursor-pointer bg-slate-700/70 backdrop-blur-sm hover:bg-slate-600/70 border-slate-600"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <WeatherIcon className="w-8 h-8 text-blue-400" />
                       <div>
-                        <div className="font-semibold text-green-400 text-lg">{day.day}</div>
+                        <div className="text-lg font-semibold text-green-400">{day.day}</div>
                         <div className="text-sm text-gray-300">{day.condition}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-white font-semibold">
+                      <div className="font-semibold text-white">
                         {day.high}°/{day.low}°
                       </div>
                       <div className="text-xs text-blue-400">
@@ -532,8 +532,8 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
                 </div>
               );
             }) || [
-              <div key="placeholder" className="bg-slate-700/70 p-4 rounded-lg">
-                <div className="text-gray-400 text-center">No forecast data available</div>
+              <div key="placeholder" className="p-4 rounded-lg bg-slate-700/70">
+                <div className="text-center text-gray-400">No forecast data available</div>
               </div>
             ]
           )}
@@ -541,8 +541,8 @@ function Sidebar({ aqiData, weatherData, forecastData, isLoading }) {
       </section>
 
       {/* Data Source Information */}
-      <section className="border-t border-slate-700 pt-4">
-        <div className="text-xs text-gray-500 text-center">
+      <section className="pt-4 border-t border-slate-700">
+        <div className="text-xs text-center text-gray-500">
           <div>Data updated every 10 minutes</div>
           <div className="mt-1">Sources: WeatherAPI, Air Quality Index</div>
         </div>
@@ -559,17 +559,81 @@ export function HeatWaveMap() {
   const [forecastData, setForecastData] = useState(null);
   const [citiesData, setCitiesData] = useState([]);
   const [temperatureData, setTemperatureData] = useState([]);
+  const [nearbyCities, setNearbyCities] = useState(['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad', 'Jaipur', 'Surat']);
 
-  const loadData = async () => {
+  // All major Indian cities with coordinates
+  const indianCities = [
+    { name: 'Delhi', lat: 28.6139, lon: 77.2090 },
+    { name: 'Mumbai', lat: 19.0760, lon: 72.8777 },
+    { name: 'Bangalore', lat: 12.9716, lon: 77.5946 },
+    { name: 'Chennai', lat: 13.0827, lon: 80.2707 },
+    { name: 'Kolkata', lat: 22.5726, lon: 88.3639 },
+    { name: 'Hyderabad', lat: 17.3850, lon: 78.4867 },
+    { name: 'Pune', lat: 18.5204, lon: 73.8567 },
+    { name: 'Ahmedabad', lat: 23.0225, lon: 72.5714 },
+    { name: 'Jaipur', lat: 26.9124, lon: 75.7873 },
+    { name: 'Surat', lat: 21.1702, lon: 72.8311 },
+    { name: 'Lucknow', lat: 26.8467, lon: 80.9462 },
+    { name: 'Kanpur', lat: 26.4499, lon: 80.3319 },
+    { name: 'Nagpur', lat: 21.1458, lon: 79.0882 },
+    { name: 'Indore', lat: 22.7196, lon: 75.8577 },
+    { name: 'Thane', lat: 19.2183, lon: 72.9781 },
+    { name: 'Bhopal', lat: 23.2599, lon: 77.4126 },
+    { name: 'Visakhapatnam', lat: 17.6868, lon: 83.2185 },
+    { name: 'Patna', lat: 25.5941, lon: 85.1376 },
+    { name: 'Vadodara', lat: 22.3072, lon: 73.1812 },
+    { name: 'Ludhiana', lat: 30.9010, lon: 75.8573 }
+  ];
+
+  // Calculate distance between two coordinates (Haversine formula)
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Get nearby cities based on coordinates
+  const getNearbyCities = (latitude, longitude, count = 10) => {
+    const citiesWithDistance = indianCities.map(city => ({
+      ...city,
+      distance: calculateDistance(latitude, longitude, city.lat, city.lon)
+    }));
+    
+    // Sort by distance and return top cities
+    return citiesWithDistance
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, count)
+      .map(city => city.name);
+  };
+
+  // Handle location change with optional coordinates
+  const handleLocationChange = (location, coordinates) => {
+    setSelectedLocation(location);
+    
+    // If coordinates are provided, update nearby cities
+    if (coordinates && coordinates.latitude && coordinates.longitude) {
+      const nearby = getNearbyCities(coordinates.latitude, coordinates.longitude, 10);
+      setNearbyCities(nearby);
+      // Reload data with nearby cities
+      loadDataWithCities(nearby);
+    }
+  };
+
+  const loadDataWithCities = async (citiesToLoad) => {
     setIsLoading(true);
     try {
-      // Load AQI data for multiple cities
-      const aqiCities = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad', 'Jaipur', 'Surat'];
-      const aqiResults = await aqiService.getMultipleCitiesAQI(aqiCities);
+      // Load AQI data for nearby cities
+      const aqiResults = await aqiService.getMultipleCitiesAQI(citiesToLoad);
       setAqiData(aqiResults.sort((a, b) => b.aqi - a.aqi)); // Sort by highest AQI
 
       // Load weather data for cities
-      const weatherResults = await weatherService.getMultipleCities(aqiCities);
+      const weatherResults = await weatherService.getMultipleCities(citiesToLoad);
       const weatherDataProcessed = weatherResults
         .filter(result => result.data !== null)
         .map(result => ({
@@ -579,106 +643,44 @@ export function HeatWaveMap() {
           humidity: result.data.humidity,
         }))
         .sort((a, b) => b.temperature - a.temperature); // Sort by highest temperature
-      
       setWeatherData(weatherDataProcessed);
 
-      // Load forecast data for selected location
-      const cityName = selectedLocation.split(',')[0];
+      // Load forecast data for the selected location
+      const cityName = selectedLocation.split(',')[0].trim();
       const forecast = await weatherService.getForecast(cityName, 7);
       setForecastData(forecast);
 
-      // Prepare cities data for map
-      const mapCitiesData = MAJOR_CITIES.map(city => {
-        const aqiInfo = aqiResults.find(a => a.city.toLowerCase() === city.name.toLowerCase()) || { aqi: 85 };
-        const weatherInfo = weatherResults.find(w => w.city.toLowerCase() === city.name.toLowerCase());
-        
-        return {
-          name: city.name,
-          position: city.position,
-          temperature: weatherInfo?.data?.temperature || 25,
-          aqi: aqiInfo.aqi,
-          condition: weatherInfo?.data?.condition || 'Pleasant',
-          humidity: weatherInfo?.data?.humidity || 65,
-        };
-      });
-      
-      setCitiesData(mapCitiesData);
-
-      // Load temperature data for heatmap from expanded grid
-      console.log('Loading temperature data for heatmap...');
-      const gridCities = INDIA_TEMPERATURE_GRID.map(city => city.name);
-      
-      // Fetch in batches to avoid overwhelming the API
-      const batchSize = 10;
-      const allTemperatureData = [];
-      
-      for (let i = 0; i < gridCities.length; i += batchSize) {
-        const batch = gridCities.slice(i, i + batchSize);
-        const batchResults = await weatherService.getMultipleCities(batch);
-        
-        batchResults.forEach((result, index) => {
-          if (result.data) {
-            const cityInfo = INDIA_TEMPERATURE_GRID.find(c => c.name === batch[index]);
-            if (cityInfo) {
-              allTemperatureData.push({
-                lat: cityInfo.lat,
-                lon: cityInfo.lon,
-                temperature: result.data.temperature,
-                name: cityInfo.name
-              });
-            }
-          }
-        });
-        
-        // Small delay between batches
-        if (i + batchSize < gridCities.length) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      }
-      
-      console.log(`Loaded ${allTemperatureData.length} temperature data points for heatmap`);
-      setTemperatureData(allTemperatureData);
-
-    } catch (error) {
-      console.error('Failed to load environmental data:', error);
-      
-      // Fallback to realistic mock data
-      const mockAqiData = [
-        { city: 'Delhi', aqi: 385, pollutants: { pm25: 285 } },
-        { city: 'Kolkata', aqi: 312, pollutants: { pm25: 198 } },
-        { city: 'Mumbai', aqi: 245, pollutants: { pm25: 145 } },
-        { city: 'Bangalore', aqi: 120, pollutants: { pm25: 88 } },
-        { city: 'Chennai', aqi: 95, pollutants: { pm25: 65 } }
-      ];
-      
-      const mockWeatherData = [
-        { name: 'Delhi', temperature: 42, condition: 'Hot', humidity: 35 },
-        { name: 'Jaipur', temperature: 39, condition: 'Very Hot', humidity: 28 },
-        { name: 'Mumbai', temperature: 33, condition: 'Humid', humidity: 78 }
-      ];
-      
-      setAqiData(mockAqiData);
-      setWeatherData(mockWeatherData);
-      setCitiesData(MAJOR_CITIES.map(city => ({
-        ...city,
-        temperature: 30 + Math.random() * 10,
-        aqi: 100 + Math.random() * 200,
-        condition: 'Pleasant',
-        humidity: 60
+      // Set cities for the map
+      setCitiesData(aqiResults.map(city => ({
+        name: city.city,
+        lat: city.lat || 0,
+        lon: city.lon || 0,
+        aqi: city.aqi,
+        temperature: weatherResults.find(w => w.city === city.city)?.data?.temperature || 25
       })));
       
-      // Generate mock temperature data for heatmap
-      const mockTempData = INDIA_TEMPERATURE_GRID.map(city => ({
-        lat: city.lat,
-        lon: city.lon,
-        temperature: 20 + Math.random() * 20, // 20-40°C range
-        name: city.name
-      }));
-      setTemperatureData(mockTempData);
+      setTemperatureData(weatherDataProcessed.map(city => ({
+        city: city.name,
+        temperature: city.temperature,
+        lat: aqiResults.find(a => a.city === city.name)?.lat || 0,
+        lon: aqiResults.find(a => a.city === city.name)?.lon || 0,
+      })));
+
+    } catch (error) {
+      console.error('Error loading heatwave data:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const loadData = async () => {
+    loadDataWithCities(nearbyCities);
+  };
+
+  useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -686,9 +688,9 @@ export function HeatWaveMap() {
   }, [selectedLocation]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-      <Header onLocationChange={setSelectedLocation} />
-      <main className="flex-1 flex flex-col lg:flex-row relative">
+    <div className="flex flex-col w-full min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <Header onLocationChange={handleLocationChange} />
+      <main className="relative flex flex-col flex-1 lg:flex-row">
         <MapView 
           citiesData={citiesData} 
           temperatureData={temperatureData}

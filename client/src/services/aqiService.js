@@ -77,12 +77,19 @@ class AQIService {
           
           const aqiInfo = this.getAQILevel(calculatedAQI);
           
+          // Get correct state from our city mapping
+          const cityData = Object.entries(INDIAN_CITIES_DATA).find(([name]) => 
+            city.toLowerCase().includes(name.toLowerCase())
+          );
+          const correctState = cityData ? cityData[1].state : data.location.region;
+          const correctCityName = cityData ? cityData[0] : data.location.name;
+          
           const aqiData = {
             aqi: calculatedAQI,
             level: aqiInfo.level,
             color: aqiInfo.color,
             description: aqiInfo.description,
-            location: `${data.location.name}, ${data.location.region}`,
+            location: `${correctCityName}, ${correctState}`,
             pollutants: {
               pm25: Math.round(pm25),
               pm10: Math.round(pm10),
@@ -117,6 +124,7 @@ class AQIService {
     
     const cityInfo = cityData ? cityData[1] : INDIAN_CITIES_DATA['Mumbai'];
     const cityName = cityData ? cityData[0] : 'Mumbai';
+    const stateName = cityData ? cityData[1].state : 'Maharashtra';
     
     const now = new Date();
     const hour = now.getHours();
@@ -168,7 +176,7 @@ class AQIService {
       level: aqiInfo.level,
       color: aqiInfo.color,
       description: aqiInfo.description,
-      location: `${cityName}, India`,
+      location: `${cityName}, ${stateName}`,
       pollutants: {
         pm25: Math.max(5, pm25),
         pm10: Math.max(10, pm10),

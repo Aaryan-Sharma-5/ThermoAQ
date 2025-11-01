@@ -47,7 +47,7 @@ export function HourlyForecast({ selectedLocation, loading }) {
   const generateDailyData = (forecastData) => {
     if (!forecastData?.daily) return [];
     
-    return forecastData.daily.slice(0, 7).map(day => ({
+    return forecastData.daily.map(day => ({
       time: day.day === 'Today' ? 'Today' : 
             day.day === 'Tomorrow' ? 'Tom' : 
             day.day.slice(0, 3),

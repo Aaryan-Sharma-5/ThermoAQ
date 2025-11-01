@@ -303,6 +303,7 @@ export const generateAQIHistory = (baseAQI, days = 7) => {
 export const INDIAN_CITIES_DATA = {
   'Delhi': { 
     coords: [28.6139, 77.2090], 
+    state: 'Delhi',
     baseAQI: 180, 
     population: '32M',
     seasonalVariation: 40,
@@ -310,6 +311,7 @@ export const INDIAN_CITIES_DATA = {
   },
   'Mumbai': { 
     coords: [19.0760, 72.8777], 
+    state: 'Maharashtra',
     baseAQI: 85, 
     population: '20M',
     seasonalVariation: 20,
@@ -317,6 +319,7 @@ export const INDIAN_CITIES_DATA = {
   },
   'Bangalore': { 
     coords: [12.9716, 77.5946], 
+    state: 'Karnataka',
     baseAQI: 70, 
     population: '13M',
     seasonalVariation: 15,
@@ -324,6 +327,7 @@ export const INDIAN_CITIES_DATA = {
   },
   'Chennai': { 
     coords: [13.0827, 80.2707], 
+    state: 'Tamil Nadu',
     baseAQI: 90, 
     population: '11M',
     seasonalVariation: 25,
@@ -331,6 +335,7 @@ export const INDIAN_CITIES_DATA = {
   },
   'Kolkata': { 
     coords: [22.5726, 88.3639], 
+    state: 'West Bengal',
     baseAQI: 140, 
     population: '15M',
     seasonalVariation: 35,
@@ -338,6 +343,7 @@ export const INDIAN_CITIES_DATA = {
   },
   'Hyderabad': { 
     coords: [17.3850, 78.4867], 
+    state: 'Telangana',
     baseAQI: 75, 
     population: '10M',
     seasonalVariation: 20,
@@ -345,6 +351,7 @@ export const INDIAN_CITIES_DATA = {
   },
   'Pune': { 
     coords: [18.5204, 73.8567], 
+    state: 'Maharashtra',
     baseAQI: 72, 
     population: '7M',
     seasonalVariation: 18,
@@ -352,9 +359,106 @@ export const INDIAN_CITIES_DATA = {
   },
   'Ahmedabad': { 
     coords: [23.0225, 72.5714], 
+    state: 'Gujarat',
     baseAQI: 105, 
     population: '8M',
     seasonalVariation: 30,
+    industrialFactor: 1.15
+  },
+  'Thane': { 
+    coords: [19.2183, 72.9781], 
+    state: 'Maharashtra',
+    baseAQI: 88, 
+    population: '2M',
+    seasonalVariation: 20,
+    industrialFactor: 1.05
+  },
+  'Jaipur': { 
+    coords: [26.9124, 75.7873], 
+    state: 'Rajasthan',
+    baseAQI: 115, 
+    population: '3M',
+    seasonalVariation: 32,
+    industrialFactor: 1.1
+  },
+  'Surat': { 
+    coords: [21.1702, 72.8311], 
+    state: 'Gujarat',
+    baseAQI: 98, 
+    population: '6M',
+    seasonalVariation: 28,
+    industrialFactor: 1.2
+  },
+  'Lucknow': { 
+    coords: [26.8467, 80.9462], 
+    state: 'Uttar Pradesh',
+    baseAQI: 155, 
+    population: '3M',
+    seasonalVariation: 35,
+    industrialFactor: 1.15
+  },
+  'Kanpur': { 
+    coords: [26.4499, 80.3319], 
+    state: 'Uttar Pradesh',
+    baseAQI: 165, 
+    population: '3M',
+    seasonalVariation: 38,
+    industrialFactor: 1.25
+  },
+  'Nagpur': { 
+    coords: [21.1458, 79.0882], 
+    state: 'Maharashtra',
+    baseAQI: 95, 
+    population: '2.5M',
+    seasonalVariation: 25,
+    industrialFactor: 1.05
+  },
+  'Indore': { 
+    coords: [22.7196, 75.8577], 
+    state: 'Madhya Pradesh',
+    baseAQI: 108, 
+    population: '2M',
+    seasonalVariation: 30,
+    industrialFactor: 1.1
+  },
+  'Bhopal': { 
+    coords: [23.2599, 77.4126], 
+    state: 'Madhya Pradesh',
+    baseAQI: 112, 
+    population: '2M',
+    seasonalVariation: 28,
+    industrialFactor: 1.08
+  },
+  'Visakhapatnam': { 
+    coords: [17.6868, 83.2185], 
+    state: 'Andhra Pradesh',
+    baseAQI: 82, 
+    population: '2M',
+    seasonalVariation: 22,
+    industrialFactor: 1.0
+  },
+  'Patna': { 
+    coords: [25.5941, 85.1376], 
+    state: 'Bihar',
+    baseAQI: 145, 
+    population: '2M',
+    seasonalVariation: 35,
+    industrialFactor: 1.18
+  },
+  'Vadodara': { 
+    coords: [22.3072, 73.1812], 
+    state: 'Gujarat',
+    baseAQI: 102, 
+    population: '2M',
+    seasonalVariation: 28,
+    industrialFactor: 1.12
+  },
+  'Ludhiana': { 
+    coords: [30.9010, 75.8573], 
+    state: 'Punjab',
+    baseAQI: 138, 
+    population: '2M',
+    seasonalVariation: 32,
     industrialFactor: 1.15
   }
 };

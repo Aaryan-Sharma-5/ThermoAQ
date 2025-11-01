@@ -243,8 +243,10 @@ const Dashboard = () => {
     fetchHeatmapData();
   }, [selectedLocation, fetchWeatherData, fetchHeatmapData]);
 
-  const handleLocationChange = (location) => {
+  const handleLocationChange = (location, _coordinates) => {
     setSelectedLocation(location);
+    // Coordinates are available if user's location was detected
+    // Can be used for nearby cities in future enhancements
   };
 
   if (loading) {
@@ -358,13 +360,13 @@ const Dashboard = () => {
                   <span className="flex items-center gap-2 opacity-75">
                     <Wind className="w-4 h-4" /> Wind
                   </span>
-                  <span className="font-medium">{weatherData?.windSpeed} km/h</span>
+                  <span className="font-medium">{weatherData?.windStatus || weatherData?.windSpeed || 0} km/h</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="flex items-center gap-2 opacity-75">
                     <Droplets className="w-4 h-4" /> Humidity
                   </span>
-                  <span className="font-medium">{weatherData?.humidity}%</span>
+                  <span className="font-medium">{weatherData?.humidity || 0}%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="flex items-center gap-2 opacity-75">
@@ -376,7 +378,7 @@ const Dashboard = () => {
                   <span className="flex items-center gap-2 opacity-75">
                     <Eye className="w-4 h-4" /> Visibility
                   </span>
-                  <span className="font-medium">{weatherData?.visibility} km</span>
+                  <span className="font-medium">{weatherData?.visibility || 10} km</span>
                 </div>
               </div>
             </div>
@@ -420,7 +422,7 @@ const Dashboard = () => {
               <Wind className="w-5 h-5 text-slate-400" />
             </div>
             <div className="mb-4">
-              <div className="text-3xl font-light text-white">{weatherData?.windSpeed}</div>
+              <div className="text-3xl font-light text-white">{weatherData?.windStatus || weatherData?.windSpeed || 0}</div>
               <p className="text-sm text-slate-500">km/h</p>
             </div>
             <div className="flex gap-2">
@@ -452,11 +454,11 @@ const Dashboard = () => {
               <Droplets className="w-5 h-5 opacity-90" />
             </div>
             <div className="mb-2">
-              <div className="text-3xl font-light">{weatherData?.humidity}</div>
+              <div className="text-3xl font-light">{weatherData?.humidity || 0}</div>
               <p className="text-sm opacity-75">%</p>
             </div>
             <p className="text-xs opacity-75">
-              {weatherData?.humidity <= 30 ? 'Dry' : weatherData?.humidity <= 60 ? 'Normal' : 'Humid'} humidity level
+              {(weatherData?.humidity || 0) <= 30 ? 'Dry' : (weatherData?.humidity || 0) <= 60 ? 'Normal' : 'Humid'} humidity level
             </p>
           </div>
 
@@ -467,11 +469,11 @@ const Dashboard = () => {
               <Eye className="w-5 h-5 text-slate-400" />
             </div>
             <div className="mb-2">
-              <div className="text-3xl font-light text-white">{weatherData?.visibility}</div>
+              <div className="text-3xl font-light text-white">{weatherData?.visibility || 10}</div>
               <p className="text-sm text-slate-500">km</p>
             </div>
             <p className="text-xs text-slate-500">
-              {weatherData?.visibility >= 10 ? 'Excellent' : weatherData?.visibility >= 5 ? 'Good' : 'Poor'} visibility conditions
+              {(weatherData?.visibility || 10) >= 10 ? 'Excellent' : (weatherData?.visibility || 10) >= 5 ? 'Good' : 'Poor'} visibility conditions
             </p>
           </div>
 
@@ -511,8 +513,8 @@ const Dashboard = () => {
           {/* Other Cities */}
           <div className="p-6 border shadow-xl md:col-span-2 bg-slate-800/50 backdrop-blur-sm rounded-3xl border-slate-700/50">
             <h3 className="mb-4 text-lg font-semibold text-white">Other Cities</h3>
-            <div className="space-y-3">
-              {otherCities.slice(0, 3).map((city, index) => (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {otherCities.map((city, index) => (
                 <div key={index} className="flex items-center justify-between p-3 transition-colors rounded-xl bg-slate-700/30 hover:bg-slate-700/50">
                   <div className="flex items-center gap-3">
                     <MapPin className="w-5 h-5 text-blue-400" />
@@ -601,7 +603,7 @@ const Dashboard = () => {
                   />
                   {showHeatmap && <HeatmapLayer temperatureData={temperatureData} opacity={heatmapOpacity} />}
                   
-                  {temperatureData.slice(0, 10).map((city, idx) => (
+                  {temperatureData.map((city, idx) => (
                     <Marker key={idx} position={[city.lat, city.lon]}>
                       <Popup className="custom-popup">
                         <div className="p-3">
