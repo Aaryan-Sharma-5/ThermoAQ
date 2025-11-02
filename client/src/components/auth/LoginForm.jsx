@@ -1,7 +1,7 @@
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import signinImage from '../../assets/images/Signin_Signup.png';
+import loginSignupImage from '../../assets/images/login-signup.png';
 import { useAuth } from '../../context/AuthContext';
 
 const LoginForm = () => {
@@ -43,21 +43,31 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="h-screen bg-white flex overflow-hidden">
-      {/* Left Side - Login Form */}
-      <div className="w-1/2 flex items-center justify-center px-4 py-6">
-        <div className="w-full max-w-sm">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Sign in to your account</h2>
-          
-          {/* Form Container */}
-          <div className="bg-gray-600 rounded-2xl p-6 space-y-4">
-            {/* Error Message */}
+    <div className="h-screen w-screen flex flex-col items-center justify-center relative overflow-hidden">
+      {/* Full-page background image */}
+      <img 
+        src={loginSignupImage}
+        alt="ThermoAQ Login Background"
+        className="fixed inset-0 w-full h-full object-cover z-0"
+        style={{filter: 'blur(2px) brightness(0.85)'}}
+      />
+      {/* Overlay for readability */}
+      <div className="fixed inset-0 bg-gradient-to-br from-black/40 via-blue-900/30 to-black/50 z-0" />
+      {/* ThermoAQ Heading */}
+      <div className="relative z-20 w-full flex justify-center pt-8 pb-2">
+        <h1 className="text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-400 bg-clip-text text-transparent drop-shadow-lg tracking-tight">ThermoAQ</h1>
+      </div>
+      {/* Centered content */}
+      <div className="relative z-10 flex flex-col md:flex-row items-center justify-center w-full h-full gap-12 px-4">
+        {/* Login Form Card */}
+        <div className="w-full max-w-md bg-gray-900/85 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10 flex flex-col items-center">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">Sign in to your account</h2>
+          <div className="w-full">
             {error && (
-              <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+              <div className="p-3 mb-4 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
                 {error}
               </div>
             )}
-            
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Input */}
               <div className="relative">
@@ -74,7 +84,6 @@ const LoginForm = () => {
                   required
                 />
               </div>
-
               {/* Password Input */}
               <div className="relative">
                 <Lock size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -97,24 +106,11 @@ const LoginForm = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-
-              {/* Remember Me */}
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="remember"
-                  className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                />
-                <label htmlFor="remember" className="ml-2 text-xs text-gray-300">
-                  Remember me, recommended for login only
-                </label>
-              </div>
-
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-colors text-sm"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-all text-sm shadow-lg"
               >
                 {loading ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto"></div>
@@ -125,30 +121,17 @@ const LoginForm = () => {
             </form>
           </div>
         </div>
-      </div>
-
-      {/* Right Side - Background Image with Content */}
-      <div 
-        className="w-1/2 bg-cover bg-center bg-no-repeat flex items-center justify-center p-8"
-        style={{
-          backgroundImage: `url(${signinImage})`
-        }}
-      >
-        <div className="text-center text-black max-w-md">
-          <h1 className="text-4xl font-bold mb-6">Welcome Back!</h1>
-          
-          <p className="text-lg mb-8 leading-relaxed">
-            ThermoAQ is India's comprehensive environmental monitoring platform 
-            that combines IMD heat-wave alerts with real-time air quality data 
-            to deliver instant, life-saving risk warnings across India with 
-            district-level precision mapping.
+        {/* Welcome Card */}
+        <div className="max-w-md bg-white/95 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border border-blue-200/50 text-center flex flex-col items-center">
+          <h1 className="text-4xl font-extrabold mb-6 tracking-tight bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent drop-shadow">Welcome Back!</h1>
+          <p className="text-lg mb-8 leading-relaxed font-medium text-gray-800">
+            Your gateway to India's most advanced environmental risk alerts.<br/>
+            <span className="font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">ThermoAQ</span> delivers real-time heat wave and air quality warnings, empowering you to make safer, healthier decisions every day.
           </p>
-          
-          <p className="text-lg mb-6">Don't have an account? Sign Up!</p>
-          
+          <p className="text-base mb-6 text-gray-700">Don't have an account?</p>
           <button
             onClick={() => navigate('/signup')}
-            className="bg-black hover:bg-gray-800 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
+            className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             Sign Up
           </button>
