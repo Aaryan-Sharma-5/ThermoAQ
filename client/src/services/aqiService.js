@@ -1,11 +1,10 @@
 import { calculateAQI, getAQIInfo, INDIAN_CITIES_DATA, generateAQIHistory } from '../utils/environmentalUtils.js';
 
-// Professional AQI Service with realistic and accurate environmental data
-const WEATHER_API_KEY = '8dc24606d7fd46a7a1991208250610';
+const WEATHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY || '';
 const WEATHER_API_BASE = 'http://api.weatherapi.com/v1';
 
 // Enhanced alternative APIs for comprehensive accurate data
-const OPENWEATHER_API_KEY = ''; // You can add OpenWeather API key for air pollution data
+const OPENWEATHER_API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY || '';
 const WAQI_API_BASE = 'https://api.waqi.info'; // World Air Quality Index API (requires token)
 
 class AQIService {
