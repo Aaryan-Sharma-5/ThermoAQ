@@ -384,8 +384,8 @@ const HomePage = () => {
                 ThermoAQ
               </h1>
               <p className="max-w-3xl mx-auto mb-12 text-xl leading-relaxed text-gray-200 md:text-2xl">
-                India's live district-level danger map—combining IMD heat-wave alerts
-                with real-time air-quality data to deliver instant, life-saving risk warnings.
+                India's comprehensive environmental monitoring platform  combining real-time air quality tracking, 
+                weather forecasts, and AI-powered health assessments to deliver instant, personalized safety guidance.
               </p>
             </div>
           </div>

@@ -11,6 +11,7 @@ export function AQIAlerts() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [checking, setChecking] = useState(false);
 
   const healthConditionOptions = [
     'Asthma',
@@ -81,6 +82,26 @@ export function AQIAlerts() {
     }));
   };
 
+  const checkAlertsNow = async () => {
+    setChecking(true);
+    try {
+      const response = await authAPI.checkAlertsNow();
+      
+      // Show toast notification
+      if (response.success) {
+        const alertsCreated = response.results.filter(r => r.alertCreated).length;
+        if (alertsCreated > 0) {
+          // Reload alerts to show new ones
+          await loadAlerts();
+        }
+      }
+    } catch (error) {
+      console.error('Error checking alerts:', error);
+    } finally {
+      setChecking(false);
+    }
+  };
+
   const unreadCount = alerts.filter(a => !a.isRead).length;
 
   return (
@@ -99,13 +120,23 @@ export function AQIAlerts() {
             Get notified when air quality exceeds your threshold
           </p>
         </div>
-        <button
-          onClick={() => setShowSettings(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-        >
-          <Settings size={18} />
-          Settings
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={checkAlertsNow}
+            disabled={checking}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          >
+            <Bell size={18} className={checking ? 'animate-pulse' : ''} />
+            {checking ? 'Checking...' : 'Check Now'}
+          </button>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+          >
+            <Settings size={18} />
+            Settings
+          </button>
+        </div>
       </div>
 
       {/* Alert Threshold Info */}

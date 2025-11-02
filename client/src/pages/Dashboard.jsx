@@ -250,7 +250,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="text-xl text-white">Loading dashboard...</div>
       </div>
     );
@@ -331,7 +331,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen overflow-x-hidden bg-black">
       <Header onLocationChange={handleLocationChange} />
       
       <div className="p-4 mx-auto max-w-7xl md:p-6">

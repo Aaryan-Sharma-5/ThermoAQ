@@ -1,5 +1,3 @@
-// Enhanced utility functions for accurate environmental data calculations and beautiful formatting
-
 // WHO and EPA accurate thresholds for air quality
 export const AQI_THRESHOLDS = {
   PM25: {

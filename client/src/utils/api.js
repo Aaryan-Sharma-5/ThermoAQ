@@ -73,6 +73,12 @@ export const authAPI = {
     return response.data;
   },
   
+  // Update user profile
+  updateUserProfile: async (userData) => {
+    const response = await api.put('/user/profile', userData);
+    return response.data;
+  },
+  
   // Get user location
   getUserLocation: async () => {
     const response = await api.get('/user/location');
@@ -121,6 +127,12 @@ export const authAPI = {
   
   markAlertAsRead: async (alertId) => {
     const response = await api.put(`/user/alerts/${alertId}/read`);
+    return response.data;
+  },
+  
+  // Check alerts now (manual trigger)
+  checkAlertsNow: async () => {
+    const response = await api.post('/user/check-alerts');
     return response.data;
   },
   

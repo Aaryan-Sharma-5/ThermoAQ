@@ -28,7 +28,6 @@ export function HealthRecommendations() {
 
   useEffect(() => {
     loadUserData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getAQILevel = (aqi) => {
@@ -274,14 +273,6 @@ export function HealthRecommendations() {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Disclaimer */}
-      <div className="mt-6 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-        <p className="text-xs text-slate-400">
-          <span className="font-semibold text-blue-400">Note:</span> These are general recommendations. 
-          Always consult with your healthcare provider for personalized medical advice.
-        </p>
       </div>
     </div>
   );

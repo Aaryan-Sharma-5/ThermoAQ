@@ -4,6 +4,7 @@ const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const cron = require('node-cron');
 require('dotenv').config();
 
 const app = express();
@@ -35,14 +36,40 @@ app.use(express.urlencoded({ extended: true }));
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✓ Connected to MongoDB');
+  }
+})
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);
+});
 
 // Routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+
+// Alert Service
+const alertService = require('./services/alertService');
+
+// Schedule alert checks - runs every 2 hours
+cron.schedule('0 */2 * * *', async () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('⏰ Running scheduled AQI alert check...');
+  }
+  await alertService.checkAllUsers();
+});
+
+// Optional: Run alert check on server startup (after 1 minute delay)
+setTimeout(async () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🚀 Running initial AQI alert check...');
+  }
+  await alertService.checkAllUsers();
+}, 60000);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -69,7 +96,9 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
-  console.log(`ThermoAQ Server running on port ${PORT}`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`✓ ThermoAQ Server running on port ${PORT}`);
+  }
 });
 
 module.exports = app;

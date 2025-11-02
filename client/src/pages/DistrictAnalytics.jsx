@@ -62,7 +62,7 @@ export function DistrictAnalytics() {
   }, [location])
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-white">
+    <div className="min-h-screen w-full bg-black text-white">
       <Header onLocationChange={setLocation} />
       <main className="container mx-auto px-4 py-6 max-w-7xl">
         {/* District Title and AQI */}
@@ -108,7 +108,7 @@ export function DistrictAnalytics() {
           </div>
         </div>
 
-        {/* Charts Section */}
+        {/* Charts Section - AQI Trend and Forecast */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <AQITrend location={location} />
           <Forecast location={location} />
@@ -117,15 +117,7 @@ export function DistrictAnalytics() {
         {/* Pollutant Breakdown */}
         <PollutantBreakdown location={location} />
 
-        {/* District Comparison */}
-        <DistrictComparison location={location} />
-
-        {/* Hourly Temperature Graph */}
-        <div className="mt-8">
-          <HourlyTemperatureGraph hourlyData={forecastData?.hourly} />
-        </div>
-
-        {/* Advanced Visualizations */}
+        {/* Advanced Visualizations - Weather Metrics */}
         <div className="grid grid-cols-1 gap-8 mt-8 lg:grid-cols-3">
           <WindCompass
             windSpeed={weatherData?.windSpeed || 0}
@@ -140,9 +132,19 @@ export function DistrictAnalytics() {
           />
         </div>
 
+        {/* Hourly Temperature Graph */}
+        <div className="mt-8">
+          <HourlyTemperatureGraph hourlyData={forecastData?.hourly} />
+        </div>
+
         {/* Detailed Pollutant Breakdown */}
         <div className="mt-8">
           <PollutantBreakdownDetailed pollutants={aqiData?.pollutants || {}} />
+        </div>
+
+        {/* District Comparison */}
+        <div className="mt-8">
+          <DistrictComparison location={location} />
         </div>
       </main>
       <Footer />

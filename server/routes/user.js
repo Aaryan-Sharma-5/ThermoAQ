@@ -1,6 +1,7 @@
 const express = require('express');
 const auth = require('../middleware/auth');
 const User = require('../models/User');
+const alertService = require('../services/alertService');
 
 const router = express.Router();
 
@@ -446,6 +447,47 @@ router.get('/health-reports', auth, async (req, res) => {
   } catch (error) {
     console.error('Get health reports error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST /api/user/check-alerts
+// @desc    Manually trigger alert check for current user
+// @access  Private
+router.post('/check-alerts', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.monitoredLocations || user.monitoredLocations.length === 0) {
+      return res.status(400).json({ 
+        message: 'No monitored locations found. Please add locations to monitor first.' 
+      });
+    }
+
+    const results = [];
+    const threshold = user.preferences?.aqiAlertThreshold || 150;
+
+    for (const locationObj of user.monitoredLocations) {
+      const locationName = locationObj.name || locationObj.location || locationObj;
+      const result = await alertService.checkUserLocation(req.user.id, locationName);
+      results.push({
+        location: locationName,
+        ...result
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Alert check completed',
+      threshold: threshold,
+      results: results
+    });
+  } catch (error) {
+    console.error('Check alerts error:', error);
+    res.status(500).json({ message: 'Server error while checking alerts' });
   }
 });
 

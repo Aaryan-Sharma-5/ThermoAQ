@@ -52,7 +52,6 @@ export function HealthAdvisory() {
 
   const handleRefresh = () => {
     // Refresh data logic here
-    console.log('Refreshing health advisory data...')
     loadHealthData(selectedLocation)
   }
 

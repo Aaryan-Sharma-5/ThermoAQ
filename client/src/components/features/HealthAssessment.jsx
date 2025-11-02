@@ -472,7 +472,7 @@ const HealthAssessment = () => {
                   {generating ? (
                     <>
                       <Loader className="w-5 h-5 animate-spin" />
-                      <span>Generating AI Health Report...</span>
+                      <span>Generating Health Report...</span>
                     </>
                   ) : (
                     <>
@@ -495,28 +495,14 @@ const HealthAssessment = () => {
                     Your Personalized Health Report
                   </h2>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 text-xs font-semibold text-green-400 rounded-full bg-green-500/20">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    AI Generated
-                  </div>
+              
                 </div>
 
                 <div className="prose prose-invert max-w-none">
-                  <div className="p-4 mb-6 transition-all duration-300 border-l-4 rounded-lg bg-blue-500/10 border-blue-400 hover:bg-blue-500/20 hover:shadow-lg hover:shadow-blue-500/10">
-                    <p className="flex items-start gap-2 text-sm text-blue-200">
-                      <AlertTriangle className="flex-shrink-0 w-5 h-5 mt-0.5" />
-                      <span>
-                        This report is AI-generated and for informational
-                        purposes only. Always consult healthcare professionals
-                        for medical advice.
-                      </span>
-                    </p>
-                  </div>
-
                   <div
-                    className="space-y-4 leading-relaxed text-gray-300"
+                    className="space-y-4 leading-relaxed text-gray-300 health-report-content"
                     dangerouslySetInnerHTML={{
-                      __html: healthReport.replace(/\n/g, "<br/>"),
+                      __html: healthReport,
                     }}
                   />
                 </div>
