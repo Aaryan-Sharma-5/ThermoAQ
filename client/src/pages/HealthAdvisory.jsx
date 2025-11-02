@@ -1,7 +1,10 @@
 import { AlertTriangleIcon, CloudIcon, DropletIcon, GlassWaterIcon, SunIcon, SunMediumIcon, WindIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import heatRiskGlobe from '../assets/images/Heat_Risk_Globe.png'
+import { AQIAlerts } from '../components/features/AQIAlerts'
+import { HealthRecommendations } from '../components/features/HealthRecommendations'
 import { Header } from '../layout/Header'
+import { Footer } from '../layout/Footer'
 import aqiService from '../services/aqiService'
 import weatherService from '../services/weatherService'
 
@@ -476,7 +479,7 @@ export function HealthAdvisory() {
 
           {/* Active Advisories Section */}
           <section
-            className="p-8 border bg-gradient-to-br from-gray-900/80 to-gray-800/80 rounded-2xl backdrop-blur-sm border-gray-700/50"
+            className="p-8 mb-6 border bg-gradient-to-br from-gray-900/80 to-gray-800/80 rounded-2xl backdrop-blur-sm border-gray-700/50"
             role="region"
             aria-label="Active Advisories"
           >
@@ -518,8 +521,15 @@ export function HealthAdvisory() {
               })}
             </div>
           </section>
+
+          {/* Health Recommendations & AQI Alerts Section */}
+          <div className="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-2">
+            <HealthRecommendations />
+            <AQIAlerts />
+          </div>
         </main>
       </div>
+      <Footer />
     </div>
   )
 }

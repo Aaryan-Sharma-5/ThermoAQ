@@ -23,6 +23,7 @@ import {
   AlertTriangleIcon
 } from 'lucide-react';
 import { Header } from '../layout/Header';
+import { Footer } from '../layout/Footer';
 import weatherService from '../services/weatherService';
 import { Line } from 'react-chartjs-2';
 import {
@@ -657,6 +658,7 @@ const Dashboard = () => {
 
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

@@ -12,7 +12,8 @@ export function MobileNav() {
     { path: '/heatwave', label: 'Heat Wave Map', icon: '🔥' },
     { path: '/analytics', label: 'Analytics', icon: '📊' },
     { path: '/health-advisory', label: 'Health Advisory', icon: '💊' },
-    { path: '/advanced', label: 'Advanced Features', icon: '⚡' }
+    { path: '/health-assessment', label: 'Health Check', icon: '🩺' },
+    { path: '/profile', label: 'Profile', icon: '👤' }
   ];
 
   const handleNavigation = (path) => {

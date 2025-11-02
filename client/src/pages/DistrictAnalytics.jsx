@@ -4,7 +4,13 @@ import { AQITrend } from '../components/analytics/AQITrend'
 import { DistrictComparison } from '../components/analytics/DistrictComparison'
 import { Forecast } from '../components/analytics/Forecast'
 import { PollutantBreakdown } from '../components/analytics/PollutantBreakdown'
+import { HourlyTemperatureGraph } from '../components/charts/HourlyTemperatureGraph'
+import { PollutantBreakdownDetailed } from '../components/charts/PollutantBreakdownDetailed'
+import { SunMoonTimeline } from '../components/charts/SunMoonTimeline'
+import { UVIndexGauge } from '../components/charts/UVIndexGauge'
+import { WindCompass } from '../components/charts/WindCompass'
 import { Header } from '../layout/Header'
+import { Footer } from '../layout/Footer'
 import aqiService from '../services/aqiService'
 import weatherService from '../services/weatherService'
 
@@ -12,29 +18,38 @@ export function DistrictAnalytics() {
   const [location, setLocation] = useState('Mumbai, Maharashtra')
   const [weatherData, setWeatherData] = useState(null)
   const [aqiData, setAqiData] = useState(null)
+  const [forecastData, setForecastData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const loadData = async () => {
     setIsLoading(true)
     try {
       const cityName = location.split(',')[0]
-      const [weather, aqi] = await Promise.all([
+      const [weather, aqi, forecast] = await Promise.all([
         weatherService.getCurrentWeather(cityName),
-        aqiService.getAirQuality(cityName)
+        aqiService.getAirQuality(cityName),
+        weatherService.getForecast(cityName, 7)
       ])
       setWeatherData(weather)
       setAqiData(aqi)
+      setForecastData(forecast)
     } catch (error) {
       console.error('Failed to load analytics data:', error)
       // Set fallback data
       setWeatherData({
         temperature: 22,
         humidity: 65,
-        windStatus: 12
+        windStatus: 12,
+        windSpeed: 12,
+        windDirection: 180,
+        uvIndex: 5,
+        sunrise: '06:00',
+        sunset: '18:00'
       })
       setAqiData({
         aqi: 85,
-        level: 'Moderate'
+        level: 'Moderate',
+        pollutants: {}
       })
     } finally {
       setIsLoading(false)
@@ -104,7 +119,33 @@ export function DistrictAnalytics() {
 
         {/* District Comparison */}
         <DistrictComparison location={location} />
+
+        {/* Hourly Temperature Graph */}
+        <div className="mt-8">
+          <HourlyTemperatureGraph hourlyData={forecastData?.hourly} />
+        </div>
+
+        {/* Advanced Visualizations */}
+        <div className="grid grid-cols-1 gap-8 mt-8 lg:grid-cols-3">
+          <WindCompass
+            windSpeed={weatherData?.windSpeed || 0}
+            windDirection={weatherData?.windDirection || 0}
+            windGust={weatherData?.windGust}
+          />
+          <UVIndexGauge uvIndex={weatherData?.uvIndex || 0} />
+          <SunMoonTimeline
+            sunrise={weatherData?.sunrise || '06:00'}
+            sunset={weatherData?.sunset || '18:00'}
+            currentTime={new Date()}
+          />
+        </div>
+
+        {/* Detailed Pollutant Breakdown */}
+        <div className="mt-8">
+          <PollutantBreakdownDetailed pollutants={aqiData?.pollutants || {}} />
+        </div>
       </main>
+      <Footer />
     </div>
   )
 }

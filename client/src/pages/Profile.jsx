@@ -1,9 +1,11 @@
 import { Mail, MapPin, User as UserIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ReportDownload } from '../components/features/ReportDownload';
 import Avatar from '../components/ui/Avatar';
 import { useAuth } from '../context/AuthContext';
 import { Header } from '../layout/Header';
+import { Footer } from '../layout/Footer';
 
 export function Profile() {
   const { user, logout } = useAuth();
@@ -154,7 +156,13 @@ export function Profile() {
             <p className="text-3xl font-bold text-white">45</p>
           </div>
         </div>
+
+        {/* Report Download Section */}
+        <div className="mt-8">
+          <ReportDownload />
+        </div>
       </main>
+      <Footer />
     </div>
   );
 }
