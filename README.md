@@ -166,12 +166,10 @@ ThermoAQ/
 │   │   │   ├── auth/           # Authentication components
 │   │   │   │   ├── LoginForm.jsx
 │   │   │   │   └── SignupForm.jsx
-│   │   │   ├── features/       # Advanced features (Protected)
-│   │   │   │   ├── MultiLocationMonitor.jsx
+│   │   │   ├── features/       # Feature components
 │   │   │   │   ├── AQIAlerts.jsx
-│   │   │   │   ├── PollutionHistory.jsx
 │   │   │   │   ├── HealthRecommendations.jsx
-│   │   │   │   ├── HealthAssessment.jsx    # NEW - AI Health Reports
+│   │   │   │   ├── HealthAssessment.jsx    # AI Health Reports
 │   │   │   │   └── ReportDownload.jsx
 │   │   │   ├── weather/        # Weather components
 │   │   │   │   ├── TodayWeather.jsx
@@ -195,8 +193,7 @@ ThermoAQ/
 │   │   │   ├── Dashboard.jsx
 │   │   │   ├── HeatWaveMap.jsx
 │   │   │   ├── HealthAdvisory.jsx
-│   │   │   ├── HealthAssessmentPage.jsx    # NEW - AI Health Check
-│   │   │   ├── AdvancedFeatures.jsx
+│   │   │   ├── HealthAssessmentPage.jsx    # AI Health Check
 │   │   │   ├── Profile.jsx
 │   │   │   └── DistrictAnalytics.jsx
 │   │   ├── services/
@@ -298,11 +295,10 @@ npm run dev
 - `/` - **Home Page** - AQI & Weather widgets overview
 - `/dashboard` - **Weather Dashboard** - Complete weather analysis
 - `/heatwave` - **Heat Wave Map** - Temperature risk mapping
-- `/analytics` - **Analytics Dashboard** - District-level insights
-- `/health-advisory` - **Health Advisory** - Environmental health recommendations
+- `/analytics` - **Analytics Dashboard** - District-level insights with advanced visualizations
+- `/health-advisory` - **Health Advisory** - Environmental health recommendations and AQI alerts
 - `/health-assessment` - **AI Health Check** - Personalized health reports (Login Required)
-- `/advanced` - **Advanced Features** - Multi-location monitoring, alerts, history (Login Required)
-- `/profile` - **User Profile** - Manage account settings (Login Required)
+- `/profile` - **User Profile** - Manage account settings and download reports (Login Required)
 
 ## 🔧 Configuration
 

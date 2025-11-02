@@ -20,6 +20,7 @@ import landingPageImage from "../assets/images/landingPage.png";
 import aqiBg from "../assets/images/LandingPage_AQI.png";
 import currentWeatherBg from "../assets/images/LandingPage_CurrentWeather.png";
 import { Header } from "../layout/Header";
+import { Footer } from "../layout/Footer";
 import aqiService from '../services/aqiService';
 import weatherService from '../services/weatherService';
 
@@ -933,18 +934,9 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="py-8 bg-black border-t border-gray-800">
-          <div className="px-6 mx-auto max-w-7xl">
-            <div className="text-center">
-              <h3 className="mb-2 text-2xl font-bold text-white">ThermoAQ</h3>
-              <p className="mb-4 text-sm text-gray-400">
-                Protecting India through environmental intelligence
-              </p>
-            </div>
-          </div>
-        </footer>
+
       </div>
+      <Footer />
     </>
   );
 };

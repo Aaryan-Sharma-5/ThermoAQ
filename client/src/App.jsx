@@ -3,7 +3,6 @@ import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
-import { AdvancedFeatures } from "./pages/AdvancedFeatures";
 import Dashboard from "./pages/Dashboard";
 import DistrictAnalytics from "./pages/DistrictAnalytics";
 import HealthAdvisory from "./pages/HealthAdvisory";
@@ -26,11 +25,6 @@ function App() {
             <Route path="/health-assessment" element={
               <ProtectedRoute>
                 <HealthAssessmentPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/advanced" element={
-              <ProtectedRoute>
-                <AdvancedFeatures />
               </ProtectedRoute>
             } />
             <Route path="/profile" element={

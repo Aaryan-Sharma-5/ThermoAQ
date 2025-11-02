@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Header } from '../layout/Header'
+import { Footer } from '../layout/Footer'
 import { GlobalWeatherMap } from '../components/weather/GlobalWeatherMap'
 import { HourlyForecast } from '../components/weather/HourlyForecast'
 import { OtherCities } from '../components/weather/OtherCities'
@@ -160,6 +161,7 @@ export function WeatherApp() {
         {/* Global Weather Map */}
         <GlobalWeatherMap multipleCitiesData={multipleCitiesData} loading={loading} />
       </main>
+      <Footer />
     </div>
   )
 }
