@@ -651,20 +651,36 @@ export function HeatWaveMap() {
       setForecastData(forecast);
 
       // Set cities for the map
-      setCitiesData(aqiResults.map(city => ({
-        name: city.city,
-        lat: city.lat || 0,
-        lon: city.lon || 0,
-        aqi: city.aqi,
-        temperature: weatherResults.find(w => w.city === city.city)?.data?.temperature || 25
-      })));
+      setCitiesData(aqiResults.map(city => {
+        // Handle both coordinate formats
+        const lat = city.coordinates?.[0] || city.lat || 0;
+        const lon = city.coordinates?.[1] || city.lon || 0;
+        
+        return {
+          name: city.city,
+          position: [lat, lon], // Leaflet expects [lat, lng] array
+          lat: lat,
+          lon: lon,
+          aqi: city.aqi,
+          temperature: weatherResults.find(w => w.city === city.city)?.data?.temperature || 25,
+          condition: weatherResults.find(w => w.city === city.city)?.data?.condition || 'Clear',
+          humidity: weatherResults.find(w => w.city === city.city)?.data?.humidity || 60
+        };
+      }));
       
-      setTemperatureData(weatherDataProcessed.map(city => ({
-        city: city.name,
-        temperature: city.temperature,
-        lat: aqiResults.find(a => a.city === city.name)?.lat || 0,
-        lon: aqiResults.find(a => a.city === city.name)?.lon || 0,
-      })));
+      setTemperatureData(weatherDataProcessed.map(city => {
+        // Find matching AQI result for coordinates
+        const aqiCity = aqiResults.find(a => a.city === city.name);
+        const lat = aqiCity?.coordinates?.[0] || aqiCity?.lat || 0;
+        const lon = aqiCity?.coordinates?.[1] || aqiCity?.lon || 0;
+        
+        return {
+          city: city.name,
+          temperature: city.temperature,
+          lat: lat,
+          lon: lon,
+        };
+      }));
 
     } catch (error) {
       console.error('Error loading heatwave data:', error);

@@ -23,6 +23,9 @@ router.get('/profile', auth, async (req, res) => {
         email: user.email,
         favorites: user.favorites || [],
         preferences: user.preferences || {},
+        monitoredLocations: user.monitoredLocations || [],
+        aqiHistory: user.aqiHistory || [],
+        alerts: user.alerts || [],
         createdAt: user.createdAt
       }
     });
@@ -370,5 +373,80 @@ router.put('/alerts/:alertId/read', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+// @route   POST /api/user/health-assessment
+// @desc    Generate AI-powered health report
+// @access  Private
+router.post('/health-assessment', auth, async (req, res) => {
+  try {
+    const { userData, environmentalData, location } = req.body;
+    
+    if (!userData || !environmentalData || !location) {
+      return res.status(400).json({ message: 'Missing required data' });
+    }
 
+    // Import gemini service
+    const { generateHealthReport } = require('../services/geminiService');
+    
+    // Generate health report using Gemini AI
+    const reportResult = await generateHealthReport(userData, environmentalData, location);
+    
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Save report to user's history
+    if (!user.healthReports) {
+      user.healthReports = [];
+    }
+
+    // Limit to last 10 reports
+    if (user.healthReports.length >= 10) {
+      user.healthReports.shift();
+    }
+
+    user.healthReports.push({
+      assessmentData: userData,
+      environmentalData,
+      location,
+      aiReport: reportResult.report,
+      generatedAt: new Date()
+    });
+
+    await user.save();
+
+    res.json({
+      success: true,
+      report: reportResult.report,
+      generatedAt: reportResult.generatedAt,
+      error: reportResult.error || null
+    });
+  } catch (error) {
+    console.error('Health assessment error:', error);
+    res.status(500).json({ message: 'Server error while generating health report' });
+  }
+});
+
+// @route   GET /api/user/health-reports
+// @desc    Get user's health report history
+// @access  Private
+router.get('/health-reports', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('healthReports');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      success: true,
+      reports: user.healthReports || []
+    });
+  } catch (error) {
+    console.error('Get health reports error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router;

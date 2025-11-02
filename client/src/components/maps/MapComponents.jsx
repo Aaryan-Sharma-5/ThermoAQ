@@ -120,6 +120,15 @@ export const AQIMap = ({ aqiData = [], selectedCity, onCitySelect, className = "
 
   const displayData = aqiData.length > 0 ? aqiData : defaultAQIData;
 
+  // Filter out any data without valid coordinates
+  const validData = displayData.filter(item => 
+    item.coordinates && 
+    Array.isArray(item.coordinates) && 
+    item.coordinates.length === 2 &&
+    typeof item.coordinates[0] === 'number' &&
+    typeof item.coordinates[1] === 'number'
+  );
+
   return (
     <div className={`w-full h-full ${className}`}>
       <MapContainer
@@ -134,7 +143,7 @@ export const AQIMap = ({ aqiData = [], selectedCity, onCitySelect, className = "
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
         
-        {displayData.map((cityData, index) => (
+        {validData.map((cityData, index) => (
           <Marker
             key={index}
             position={cityData.coordinates}
@@ -293,7 +302,7 @@ export const HeatMap = ({ temperatureData = [], className = "" }) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
-        {displayData.map((cityData, index) => (
+        {validData.map((cityData, index) => (
           <Marker
             key={index}
             position={cityData.coordinates}

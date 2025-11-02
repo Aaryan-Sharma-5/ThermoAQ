@@ -154,7 +154,7 @@ const HomePage = () => {
         location: location
       });
       
-      // Use AQI service fallback which has realistic city-based data
+      // Use service fallbacks which have realistic city-based data
       const fallbackAQI = await aqiService.getAirQuality(cityName);
       setAqiData(fallbackAQI);
       
@@ -163,6 +163,10 @@ const HomePage = () => {
       
       const fallbackMultiCity = await aqiService.getMultipleCitiesAQI();
       setMultipleCitiesAQI(fallbackMultiCity);
+
+      // Add forecast fallback with realistic varying temperatures
+      const fallbackForecast = await weatherService.getForecast(cityName, 7);
+      setForecastData(fallbackForecast);
       
     } finally {
       setLoading(false);

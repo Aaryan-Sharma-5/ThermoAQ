@@ -243,10 +243,8 @@ const Dashboard = () => {
     fetchHeatmapData();
   }, [selectedLocation, fetchWeatherData, fetchHeatmapData]);
 
-  const handleLocationChange = (location, _coordinates) => {
+  const handleLocationChange = (location) => {
     setSelectedLocation(location);
-    // Coordinates are available if user's location was detected
-    // Can be used for nearby cities in future enhancements
   };
 
   if (loading) {
@@ -332,7 +330,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Header onLocationChange={handleLocationChange} />
       
       <div className="p-4 mx-auto max-w-7xl md:p-6">
@@ -478,36 +476,36 @@ const Dashboard = () => {
           </div>
 
           {/* Tomorrow Forecast */}
-          <div className="relative p-6 overflow-hidden text-white shadow-xl md:col-span-2 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-3xl">
+          <div className="relative p-6 text-white shadow-xl md:col-span-2 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-3xl">
             <div className="relative z-10">
               <h3 className="mb-4 text-lg font-semibold">Tomorrow</h3>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="mb-2 text-5xl font-light">{forecastData?.tomorrow?.temperature || forecastData?.daily?.[1]?.high}°</div>
-                  <p className="text-lg opacity-90">{forecastData?.tomorrow?.condition || forecastData?.daily?.[1]?.condition}</p>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="mb-2 text-4xl font-light md:text-5xl">{forecastData?.tomorrow?.temperature || forecastData?.daily?.[1]?.high}°</div>
+                  <p className="text-base truncate md:text-lg opacity-90">{forecastData?.tomorrow?.condition || forecastData?.daily?.[1]?.condition}</p>
                 </div>
-                <Sun className="w-24 h-24 opacity-80" />
+                <Sun className="w-16 h-16 md:w-20 md:h-20 opacity-80 shrink-0" />
               </div>
               
-              <div className="grid grid-cols-3 gap-4 mt-6">
+              <div className="grid grid-cols-3 gap-3 mt-6 md:gap-4">
                 <div className="text-center">
-                  <Wind className="w-5 h-5 mx-auto mb-1 opacity-75" />
-                  <p className="text-sm opacity-75">Wind</p>
-                  <p className="font-semibold">{forecastData?.tomorrow?.windSpeed || forecastData?.daily?.[1]?.wind} mph</p>
+                  <Wind className="w-4 h-4 mx-auto mb-1 md:w-5 md:h-5 opacity-75" />
+                  <p className="text-xs md:text-sm opacity-75">Wind</p>
+                  <p className="text-sm font-semibold md:text-base">{forecastData?.tomorrow?.windSpeed || forecastData?.daily?.[1]?.wind} mph</p>
                 </div>
                 <div className="text-center">
-                  <Droplets className="w-5 h-5 mx-auto mb-1 opacity-75" />
-                  <p className="text-sm opacity-75">Humidity</p>
-                  <p className="font-semibold">{forecastData?.tomorrow?.humidity || 65}%</p>
+                  <Droplets className="w-4 h-4 mx-auto mb-1 md:w-5 md:h-5 opacity-75" />
+                  <p className="text-xs md:text-sm opacity-75">Humidity</p>
+                  <p className="text-sm font-semibold md:text-base">{forecastData?.tomorrow?.humidity || 65}%</p>
                 </div>
                 <div className="text-center">
-                  <Eye className="w-5 h-5 mx-auto mb-1 opacity-75" />
-                  <p className="text-sm opacity-75">Visibility</p>
-                  <p className="font-semibold">{forecastData?.tomorrow?.visibility || 10} mi</p>
+                  <Eye className="w-4 h-4 mx-auto mb-1 md:w-5 md:h-5 opacity-75" />
+                  <p className="text-xs md:text-sm opacity-75">Visibility</p>
+                  <p className="text-sm font-semibold md:text-base">{forecastData?.tomorrow?.visibility || 10} mi</p>
                 </div>
               </div>
             </div>
-            <div className="absolute top-0 right-0 w-64 h-64 -mt-32 -mr-32 rounded-full bg-white/10"></div>
+            <div className="absolute top-0 right-0 w-48 h-48 -mt-24 -mr-24 rounded-full pointer-events-none md:w-64 md:h-64 md:-mt-32 md:-mr-32 bg-white/10"></div>
           </div>
 
           {/* Other Cities */}

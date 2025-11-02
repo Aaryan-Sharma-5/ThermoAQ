@@ -123,6 +123,17 @@ export const authAPI = {
     const response = await api.put(`/user/alerts/${alertId}/read`);
     return response.data;
   },
+  
+  // Health Assessment
+  generateHealthReport: async (assessmentData) => {
+    const response = await api.post('/user/health-assessment', assessmentData);
+    return response.data;
+  },
+  
+  getHealthReports: async () => {
+    const response = await api.get('/user/health-reports');
+    return response.data;
+  },
 };
 
 export default api;

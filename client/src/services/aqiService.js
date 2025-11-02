@@ -247,7 +247,7 @@ class AQIService {
           aqi: aqiData.aqi,
           level: aqiData.level,
           color: aqiData.color,
-          coords: coords,
+          coordinates: coords,
           pollutants: aqiData.pollutants,
           source: aqiData.source
         };
@@ -270,7 +270,7 @@ class AQIService {
           aqi: aqiData.aqi,
           level: aqiData.level,
           color: aqiData.color,
-          coords: coords,
+          coordinates: coords,
           pollutants: aqiData.pollutants,
           source: aqiData.source
         };

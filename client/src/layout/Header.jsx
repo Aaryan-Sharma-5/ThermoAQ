@@ -179,6 +179,18 @@ export const Header = ({ onLocationChange, onRefresh }) => {
           <button
             onClick={() => {
               if (user) {
+                navigate("/health-assessment");
+              } else {
+                navigate("/login");
+              }
+            }}
+            className="font-medium text-white transition-colors hover:text-blue-400"
+          >
+            Health Check
+          </button>
+          <button
+            onClick={() => {
+              if (user) {
                 navigate("/advanced");
               } else {
                 navigate("/login");
@@ -365,6 +377,19 @@ export const Header = ({ onLocationChange, onRefresh }) => {
                 className="px-4 py-3 font-medium text-left text-white transition-colors rounded-lg hover:bg-white/10"
               >
                 Health Advisory
+              </button>
+              <button
+                onClick={() => {
+                  if (user) {
+                    navigate("/health-assessment");
+                  } else {
+                    navigate("/login");
+                  }
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-4 py-3 font-medium text-left text-white transition-colors rounded-lg hover:bg-white/10"
+              >
+                Health Check
               </button>
               <button
                 onClick={() => {

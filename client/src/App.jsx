@@ -7,6 +7,7 @@ import { AdvancedFeatures } from "./pages/AdvancedFeatures";
 import Dashboard from "./pages/Dashboard";
 import DistrictAnalytics from "./pages/DistrictAnalytics";
 import HealthAdvisory from "./pages/HealthAdvisory";
+import HealthAssessmentPage from "./pages/HealthAssessmentPage";
 import HeatWaveMap from "./pages/HeatWaveMap";
 import HomePage from "./pages/HomePage";
 import Profile from "./pages/Profile";
@@ -22,6 +23,11 @@ function App() {
             <Route path="/heatwave" element={<HeatWaveMap />} />
             <Route path="/analytics" element={<DistrictAnalytics />} />
             <Route path="/health-advisory" element={<HealthAdvisory />} />
+            <Route path="/health-assessment" element={
+              <ProtectedRoute>
+                <HealthAssessmentPage />
+              </ProtectedRoute>
+            } />
             <Route path="/advanced" element={
               <ProtectedRoute>
                 <AdvancedFeatures />

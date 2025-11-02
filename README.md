@@ -29,6 +29,7 @@ ThermoAQ delivers precision environmental monitoring with:
 - **Runtime**: Node.js with Express
 - **Database**: MongoDB with Mongoose
 - **Authentication**: JWT & bcryptjs
+- **AI Integration**: Google Gemini AI (Health Reports)
 - **Real-time**: Socket.io
 
 ### APIs & Data Sources
@@ -39,6 +40,7 @@ ThermoAQ delivers precision environmental monitoring with:
   - Air quality index
 - **Geocoding**: Open-Meteo Geocoding API
 - **Maps**: OpenStreetMap via Leaflet
+- **AI Health Reports**: Google Gemini 1.5 Flash API
 
 ## 🌟 Key Features
 
@@ -109,6 +111,34 @@ ThermoAQ delivers precision environmental monitoring with:
   - UV index recommendations
   - Outdoor activity suggestions
   - Vulnerable population warnings
+  - Personalized AQI alerts based on user conditions
+
+### 🏥 AI-Powered Health Assessment 
+- **Personalized Health Reports**
+  - AI-generated health analysis using Google Gemini
+  - Environmental impact assessment (AQI, temperature, humidity, UV)
+  - Symptom analysis and correlation with environmental conditions
+  - Personalized recommendations based on pre-existing conditions
+  
+- **Comprehensive Health Data Collection**
+  - Current symptoms tracking (cough, breathing difficulty, fatigue, etc.)
+  - Pre-existing conditions (asthma, COPD, heart disease, allergies)
+  - Activity level and outdoor exposure time
+  - Age and gender-specific analysis
+
+- **Intelligent Report Generation**
+  - Overall health risk assessment (Low/Moderate/High/Severe)
+  - Immediate action recommendations for today
+  - Long-term health strategies
+  - Warning signs to watch for
+  - When to seek medical attention
+  - Medication considerations
+
+- **Report Management**
+  - Save last 10 health reports
+  - View report history
+  - Print/export reports
+  - Track health trends over time
 
 ### 📊 Advanced Visualizations
 - **Precipitation Charts**
@@ -126,26 +156,6 @@ ThermoAQ delivers precision environmental monitoring with:
   - Multi-city comparison
   - Pollutant-specific charts
 
-### � User Experience Features
-- **Modern UI/UX**
-  - Gradient backgrounds with glassmorphism
-  - Smooth hover animations
-  - Interactive cards with scale effects
-  - Loading states and skeletons
-  - Error handling with fallback data
-
-- **City Management**
-  - Search with autocomplete (70+ popular cities)
-  - Add/remove cities dynamically
-  - Favorite locations
-  - Multi-city weather comparison
-
-- **Responsive Design**
-  - Mobile-optimized layouts
-  - Touch-friendly interactions
-  - Adaptive grid systems
-  - Consistent spacing and typography
-
 ## 📁 Project Structure
 
 ```
@@ -153,6 +163,16 @@ ThermoAQ/
 ├── client/                      # React Frontend
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── auth/           # Authentication components
+│   │   │   │   ├── LoginForm.jsx
+│   │   │   │   └── SignupForm.jsx
+│   │   │   ├── features/       # Advanced features (Protected)
+│   │   │   │   ├── MultiLocationMonitor.jsx
+│   │   │   │   ├── AQIAlerts.jsx
+│   │   │   │   ├── PollutionHistory.jsx
+│   │   │   │   ├── HealthRecommendations.jsx
+│   │   │   │   ├── HealthAssessment.jsx    # NEW - AI Health Reports
+│   │   │   │   └── ReportDownload.jsx
 │   │   │   ├── weather/        # Weather components
 │   │   │   │   ├── TodayWeather.jsx
 │   │   │   │   ├── TomorrowWeather.jsx
@@ -168,15 +188,22 @@ ThermoAQ/
 │   │   │   ├── charts/         # Chart components
 │   │   │   │   └── ChartComponents.jsx
 │   │   │   └── ui/             # UI components
+│   │   │       └── Avatar.jsx
 │   │   ├── pages/
 │   │   │   ├── HomePage.jsx
 │   │   │   ├── WeatherApp.jsx
 │   │   │   ├── Dashboard.jsx
 │   │   │   ├── HeatWaveMap.jsx
-│   │   │   └── HealthAdvisory.jsx
+│   │   │   ├── HealthAdvisory.jsx
+│   │   │   ├── HealthAssessmentPage.jsx    # NEW - AI Health Check
+│   │   │   ├── AdvancedFeatures.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   └── DistrictAnalytics.jsx
 │   │   ├── services/
 │   │   │   ├── weatherService.js  # Weather API integration
 │   │   │   └── aqiService.js      # AQI data service
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx
 │   │   ├── layout/
 │   │   │   ├── Header.jsx
 │   │   │   └── Footer.jsx
@@ -188,12 +215,14 @@ ThermoAQ/
 └── server/                      # Node.js Backend
     ├── controllers/
     ├── models/
-    │   └── User.js
+    │   └── User.js              # User schema with health reports
     ├── routes/
-    │   └── auth.js
+    │   ├── auth.js
+    │   └── user.js              # Health assessment endpoints
     ├── middleware/
     │   └── auth.js
     ├── services/
+    │   └── geminiService.js     # NEW - Gemini AI integration
     ├── server.js
     └── package.json
 ```
@@ -203,7 +232,7 @@ ThermoAQ/
 ### Prerequisites
 - Node.js (v16 or higher)
 - npm or yarn
-- MongoDB (optional - for auth features)
+- MongoDB 
 
 ### Installation
 
@@ -223,6 +252,25 @@ ThermoAQ/
    ```bash
    cd ../server
    npm install
+   ```
+
+4. **Configure environment variables** (for AI features)
+   ```bash
+   cd server
+   # Create .env file
+   cp .env.example .env
+   ```
+   
+   Add your Gemini API key to `.env`:
+   ```env
+   # Get from: https://makersuite.google.com/app/apikey
+   GEMINI_API_KEY=your_gemini_api_key_here
+   
+   # MongoDB connection
+   MONGODB_URI=mongodb://localhost:27017/thermoaq
+   
+   # JWT Secret
+   JWT_SECRET=your_secret_key_here
    ```
 
 ### Running the Application
@@ -245,49 +293,39 @@ cd client
 npm run dev
 ```
 
-## � Available Routes
+## 🗺️ Available Routes
 
 - `/` - **Home Page** - AQI & Weather widgets overview
-- `/weather` - **Weather Dashboard** - Complete weather analysis
-- `/dashboard` - **Analytics Dashboard** - District-level insights
+- `/dashboard` - **Weather Dashboard** - Complete weather analysis
 - `/heatwave` - **Heat Wave Map** - Temperature risk mapping
-- `/health` - **Health Advisory** - Environmental health recommendations
-
-## 🎯 Features In Development
-
-### Completed ✅
-- [x] Real-time weather data integration
-- [x] Auto-refresh (10-minute intervals)
-- [x] Weather alerts system
-- [x] 7-day forecast
-- [x] Hourly forecasts
-- [x] Global weather map (130+ cities)
-- [x] AQI monitoring
-- [x] Precipitation charts
-- [x] City search & management
-- [x] Professional UI with Lucide icons
-- [x] Hover effects and animations
-
-### In Progress 🔄
-- [ ] Hourly temperature graph with min/max markers
-- [ ] Enhanced AQI pollutant breakdown with health recommendations
-- [ ] Historical comparison charts
-- [ ] Geolocation auto-detect
-- [ ] Favorite locations management
-
-### Planned 📋
-- [ ] Wind direction/speed compass
-- [ ] UV index gauge visualization
-- [ ] Sunrise/sunset timeline
-- [ ] Moon phase indicator
-- [ ] Pressure trend chart
-- [ ] Export weather reports as PDF
-- [ ] Social media sharing
-- [ ] Download historical data as CSV
-- [ ] Enhanced mobile responsiveness
-- [ ] Touch gestures for charts
+- `/analytics` - **Analytics Dashboard** - District-level insights
+- `/health-advisory` - **Health Advisory** - Environmental health recommendations
+- `/health-assessment` - **AI Health Check** - Personalized health reports (Login Required)
+- `/advanced` - **Advanced Features** - Multi-location monitoring, alerts, history (Login Required)
+- `/profile` - **User Profile** - Manage account settings (Login Required)
 
 ## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the `server` directory:
+
+```env
+# MongoDB Database
+MONGODB_URI=mongodb://localhost:27017/thermoaq
+
+# JWT Authentication
+JWT_SECRET=your_secret_key_here
+
+# Google Gemini AI (for Health Reports)
+# Get your API key from: https://makersuite.google.com/app/apikey
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Server Configuration
+PORT=3001
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+```
 
 ### Weather Service
 The application uses **Open-Meteo API** which requires no API key. Configuration is in:
@@ -297,27 +335,17 @@ const OPEN_METEO_BASE = 'https://api.open-meteo.com/v1';
 const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1';
 ```
 
+### AI Health Reports
+- Uses Google Gemini 1.5 Flash model
+- Generates personalized health reports
+- Fallback system if API unavailable
+- Free tier: 60 requests/minute
+
 ### Caching
 - **Cache Duration**: 10 minutes
 - **Auto-Refresh**: 10-minute intervals
 - Prevents excessive API calls
 - Improves performance
-
-## 🎨 Design System
-
-### Colors
-- **Primary**: Blue (#3B82F6)
-- **Secondary**: Orange (#F97316)
-- **Success**: Green (#10B981)
-- **Warning**: Yellow (#F59E0B)
-- **Danger**: Red (#EF4444)
-
-### Components
-- Glassmorphism effects with backdrop blur
-- Gradient backgrounds
-- Consistent border radius (rounded-xl, rounded-2xl, rounded-3xl)
-- Smooth transitions (300ms-500ms)
-- Hover scale effects (1.01-1.10)
 
 ## 📊 Performance Optimizations
 
@@ -327,35 +355,16 @@ const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1';
 - **Lazy Loading**: Components load on demand
 - **Optimized Re-renders**: Memoized values and callbacks
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
-## 👨‍💻 Author
-
-**Aaryan Sharma**
-- GitHub: [@Aaryan-Sharma-5](https://github.com/Aaryan-Sharma-5)
-
 ## 🙏 Acknowledgments
 
 - **Open-Meteo** - Free weather API
 - **OpenStreetMap** - Map data
+- **Google Gemini AI** - AI-powered health reports
 - **Lucide React** - Icon library
 - **Chart.js** - Data visualization
 - **Tailwind CSS** - Styling framework
+- **React Leaflet** - Interactive maps
 
 ---
 
-**Made with ❤️ for environmental awareness** - Empowering communities through intelligent weather monitoring and actionable insights.
-
-**Live Demo**: ThermoAQ - Your Environmental Intelligence Platform
+**Made with ❤️ for environmental awareness and public health** - Empowering communities through intelligent weather monitoring, air quality tracking, and personalized health insights.

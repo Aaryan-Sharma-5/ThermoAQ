@@ -84,6 +84,28 @@ const userSchema = new mongoose.Schema({
     message: String,
     isRead: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
+  }],
+  healthReports: [{
+    assessmentData: {
+      age: Number,
+      gender: String,
+      symptoms: Object,
+      preExistingConditions: Object,
+      activityLevel: String,
+      timeOutdoors: String,
+      additionalConcerns: String
+    },
+    environmentalData: {
+      aqi: Number,
+      aqiLevel: String,
+      temperature: Number,
+      humidity: Number,
+      uvIndex: Number,
+      pollutants: Object
+    },
+    location: String,
+    aiReport: String,
+    generatedAt: { type: Date, default: Date.now }
   }]
 }, {
   timestamps: true

@@ -1,7 +1,6 @@
 import { Download, FileText, Loader } from 'lucide-react';
 import { useState } from 'react';
 import { authAPI } from '../../utils/api';
-import aqiService from '../../services/aqiService';
 
 export function ReportDownload() {
   const [generating, setGenerating] = useState(false);
@@ -11,11 +10,10 @@ export function ReportDownload() {
     setGenerating(true);
     try {
       // Fetch all necessary data
-      const [profile, history, alerts, currentAQI] = await Promise.all([
+      const [profile, history, alerts] = await Promise.all([
         authAPI.getUserProfile(),
         authAPI.getAQIHistory(),
-        authAPI.getAlerts(),
-        aqiService.getAirQuality('Mumbai')
+        authAPI.getAlerts()
       ]);
 
       const user = profile.user;
@@ -399,11 +397,7 @@ export function ReportDownload() {
   const generateCSVReport = async () => {
     setGenerating(true);
     try {
-      const [history, alerts] = await Promise.all([
-        authAPI.getAQIHistory(),
-        authAPI.getAlerts()
-      ]);
-
+      const history = await authAPI.getAQIHistory();
       const aqiHistory = history.history || [];
       
       // Create CSV content
