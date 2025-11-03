@@ -1,5 +1,5 @@
 import { DropletIcon, ThermometerIcon, WindIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AQITrend } from '../components/analytics/AQITrend'
 import { DistrictComparison } from '../components/analytics/DistrictComparison'
 import { Forecast } from '../components/analytics/Forecast'
@@ -21,7 +21,7 @@ export function DistrictAnalytics() {
   const [forecastData, setForecastData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true)
     try {
       const cityName = location.split(',')[0]
@@ -54,12 +54,11 @@ export function DistrictAnalytics() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [location])
 
   useEffect(() => {
     loadData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location])
+  }, [loadData])
 
   return (
     <div className="min-h-screen w-full bg-black text-white">

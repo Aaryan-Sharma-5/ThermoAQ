@@ -108,7 +108,7 @@ const HomePage = () => {
   // Function to handle location change from Header
   const handleLocationChange = (location, coordinates) => {
     setSelectedLocation(location);
-    fetchAllData(location, coordinates);
+    // Don't call fetchAllData here - let useEffect handle it
   };
 
   const fetchAllData = useCallback(async (location, coordinates) => {
