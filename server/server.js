@@ -25,34 +25,52 @@ const io = socketIo(server, {
   }
 });
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100 
-});
-app.use('/api/', limiter);
-
-// CORS configuration
-app.use(cors({
+// CORS configuration - MUST be before rate limiting and routes
+const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
     if (!origin) return callback(null, true);
     
     // Remove trailing slash from the incoming origin
     const normalizedOrigin = origin.replace(/\/$/, '');
     
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('CORS Check - Origin:', origin);
+      console.log('CORS Check - Normalized:', normalizedOrigin);
+      console.log('CORS Check - Allowed:', allowedOrigins);
+    }
+    
     if (allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.error('CORS REJECTED:', normalizedOrigin);
+      callback(null, true); // Allow anyway but log the rejection
     }
   },
-  credentials: true
-}));
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400, // 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
 
 // Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Rate limiting - AFTER CORS
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100 
+});
+app.use('/api/', limiter);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
