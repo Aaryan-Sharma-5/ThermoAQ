@@ -1,11 +1,7 @@
 import { calculateAQI, getAQIInfo, INDIAN_CITIES_DATA, generateAQIHistory } from '../utils/environmentalUtils.js';
 
-const WEATHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY || '';
-const WEATHER_API_BASE = 'https://api.weatherapi.com/v1'; // HTTPS for production
-
-// Enhanced alternative APIs for comprehensive accurate data
-const OPENWEATHER_API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY || '';
-const WAQI_API_BASE = 'https://api.waqi.info'; // World Air Quality Index API (requires token)
+// Use backend proxy to avoid exposing API keys and CORS issues
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 class AQIService {
   constructor() {
@@ -52,9 +48,9 @@ class AQIService {
     }
 
     try {
-      // Try WeatherAPI first for actual air quality data
+      // Use backend proxy to fetch data (avoids CORS and hides API key)
       const response = await fetch(
-        `${WEATHER_API_BASE}/current.json?key=${WEATHER_API_KEY}&q=${city}&aqi=yes`
+        `${API_BASE_URL}/proxy/weather/current?city=${encodeURIComponent(city)}`
       );
       
       if (response.ok) {

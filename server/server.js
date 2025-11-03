@@ -49,8 +49,10 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
+const proxyRoutes = require('./routes/proxy');
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/proxy', proxyRoutes);
 
 // Alert Service
 const alertService = require('./services/alertService');
