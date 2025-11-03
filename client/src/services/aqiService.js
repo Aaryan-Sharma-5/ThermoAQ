@@ -1,7 +1,7 @@
 import { calculateAQI, getAQIInfo, INDIAN_CITIES_DATA, generateAQIHistory } from '../utils/environmentalUtils.js';
 
 const WEATHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY || '';
-const WEATHER_API_BASE = 'http://api.weatherapi.com/v1';
+const WEATHER_API_BASE = 'https://api.weatherapi.com/v1'; // HTTPS for production
 
 // Enhanced alternative APIs for comprehensive accurate data
 const OPENWEATHER_API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY || '';
